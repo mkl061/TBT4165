@@ -1,0 +1,155 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        
+            <script src="lib/bindings/utils.js"></script>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/dist/vis-network.min.css" integrity="sha512-WgxfT5LWjfszlPHXRmBWHkV2eceiWTOBvrKCNbdgDYTHrT2AeLCGbF4sZlZw3UMN3WtL0tGUoIAKsu8mllg/XA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/vis-network.min.js" integrity="sha512-LnvoEWDFrqGHlHmDD2101OrLcbsfkrzoSpvtSQtxK3RMnRV0eOkhhBN2dXHKRrUU8p2DGRTk35n4O8nWSVe1mQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+            
+        
+<center>
+<h1></h1>
+</center>
+
+<!-- <link rel="stylesheet" href="../node_modules/vis/dist/vis.min.css" type="text/css" />
+<script type="text/javascript" src="../node_modules/vis/dist/vis.js"> </script>-->
+        <link
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css"
+          rel="stylesheet"
+          integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6"
+          crossorigin="anonymous"
+        />
+        <script
+          src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js"
+          integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf"
+          crossorigin="anonymous"
+        ></script>
+
+
+        <center>
+          <h1></h1>
+        </center>
+        <style type="text/css">
+
+             #mynetwork {
+                 width: 1920px;
+                 height: 1080px;
+                 background-color: #ffffff;
+                 border: 1px solid lightgray;
+                 position: relative;
+                 float: left;
+             }
+
+             
+
+             
+
+             
+        </style>
+    </head>
+
+
+    <body>
+        <div class="card" style="width: 100%">
+            
+            
+            <div id="mynetwork" class="card-body"></div>
+        </div>
+
+        
+        
+
+        <script type="text/javascript">
+
+              // initialize global variables.
+              var edges;
+              var nodes;
+              var allNodes;
+              var allEdges;
+              var nodeColors;
+              var originalNodes;
+              var network;
+              var container;
+              var options, data;
+              var filter = {
+                  item : '',
+                  property : '',
+                  value : []
+              };
+
+              
+
+              
+
+              // This method is responsible for drawing the graph, returns the drawn network
+              function drawGraph() {
+                  var container = document.getElementById('mynetwork');
+
+                  
+
+                  // parsing and collecting nodes and edges from the python
+                  nodes = new vis.DataSet([{"color": "#97c2fc", "id": "gollum", "label": "gollum", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "anborn", "label": "anborn", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "faramir", "label": "faramir", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "sam", "label": "sam", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "frodo", "label": "frodo", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "mablung", "label": "mablung", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "damrod", "label": "damrod", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "imrahil", "label": "imrahil", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "denethor", "label": "denethor", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "warden", "label": "warden", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "gandalf", "label": "gandalf", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "aragorn", "label": "aragorn", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "eowyn", "label": "eowyn", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "sandyman", "label": "sandyman", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "merry", "label": "merry", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "gaffer", "label": "gaffer", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "old_noakes", "label": "old_noakes", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "barliman", "label": "barliman", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "hob", "label": "hob", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "fredegar", "label": "fredegar", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "bregalad", "label": "bregalad", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "pippin", "label": "pippin", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "mr._maggot", "label": "mr._maggot", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "celeborn", "label": "celeborn", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "cotton", "label": "cotton", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "bergil", "label": "bergil", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "grishnakh", "label": "grishnakh", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "otho", "label": "otho", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "eomer", "label": "eomer", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "saruman", "label": "saruman", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "elfhelm", "label": "elfhelm", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "theoden", "label": "theoden", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "ugluk", "label": "ugluk", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "lobelia", "label": "lobelia", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "haldir", "label": "haldir", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "legolas", "label": "legolas", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "young_tom", "label": "young_tom", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "gimli", "label": "gimli", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "treebeard", "label": "treebeard", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "bill", "label": "bill", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "nazgul_lord", "label": "nazgul_lord", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "bilbo", "label": "bilbo", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "shelob", "label": "shelob", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "galadriel", "label": "galadriel", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "robin", "label": "robin", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "boromir", "label": "boromir", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "galandriel", "label": "galandriel", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "mrs._cotton", "label": "mrs._cotton", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "snaga", "label": "snaga", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "tom", "label": "tom", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "rosie", "label": "rosie", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "galdor", "label": "galdor", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "elrond", "label": "elrond", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "gloin", "label": "gloin", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "elladan", "label": "elladan", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "hama", "label": "hama", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "gamling", "label": "gamling", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "eothain", "label": "eothain", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "mrs._maggot", "label": "mrs._maggot", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "nob", "label": "nob", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "ingold", "label": "ingold", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "beregond", "label": "beregond", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "gildor", "label": "gildor", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "mugwort", "label": "mugwort", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "erestor", "label": "erestor", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "glorfindel", "label": "glorfindel", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "goldberry", "label": "goldberry", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "halbarad", "label": "halbarad", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "ghan", "label": "ghan", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "wormtongue", "label": "wormtongue", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "dunhere", "label": "dunhere", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "ceorl", "label": "ceorl", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "hirgon", "label": "hirgon", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "targon", "label": "targon", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "ioreth", "label": "ioreth", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "nazgul_lieutenant", "label": "nazgul_lieutenant", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "bob", "label": "bob", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "elrohir", "label": "elrohir", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "shagrat", "label": "shagrat", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "gorbag", "label": "gorbag", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "daddy_twofoot", "label": "daddy_twofoot", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "proudfoot", "label": "proudfoot", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "fatty", "label": "fatty", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "arwen", "label": "arwen", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "everard", "label": "everard", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "melilot", "label": "melilot", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "gwaihir", "label": "gwaihir", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "landir", "label": "landir", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "rory", "label": "rory", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "esmeralda", "label": "esmeralda", "shape": "dot", "size": 10}]);
+                  edges = new vis.DataSet([{"from": "gollum", "n_int": 2, "to": "anborn", "width": 1}, {"from": "gollum", "n_int": 4, "to": "faramir", "width": 1}, {"from": "gollum", "n_int": 36, "to": "sam", "width": 1}, {"from": "gollum", "n_int": 37, "to": "frodo", "width": 1}, {"from": "anborn", "n_int": 1, "to": "faramir", "width": 1}, {"from": "anborn", "n_int": 1, "to": "frodo", "width": 1}, {"from": "faramir", "n_int": 2, "to": "mablung", "width": 1}, {"from": "faramir", "n_int": 2, "to": "damrod", "width": 1}, {"from": "faramir", "n_int": 1, "to": "imrahil", "width": 1}, {"from": "faramir", "n_int": 5, "to": "denethor", "width": 1}, {"from": "faramir", "n_int": 3, "to": "warden", "width": 1}, {"from": "faramir", "n_int": 2, "to": "gandalf", "width": 1}, {"from": "faramir", "n_int": 10, "to": "sam", "width": 1}, {"from": "faramir", "n_int": 2, "to": "aragorn", "width": 1}, {"from": "faramir", "n_int": 9, "to": "eowyn", "width": 1}, {"from": "faramir", "n_int": 32, "to": "frodo", "width": 1}, {"from": "sandyman", "n_int": 1, "to": "merry", "width": 1}, {"from": "sandyman", "n_int": 2, "to": "sam", "width": 1}, {"from": "sandyman", "n_int": 2, "to": "gaffer", "width": 1}, {"from": "sandyman", "n_int": 1, "to": "old_noakes", "width": 1}, {"from": "merry", "n_int": 2, "to": "barliman", "width": 1}, {"from": "merry", "n_int": 2, "to": "hob", "width": 1}, {"from": "merry", "n_int": 4, "to": "eowyn", "width": 1}, {"from": "merry", "n_int": 3, "to": "fredegar", "width": 1}, {"from": "merry", "n_int": 4, "to": "bregalad", "width": 1}, {"from": "merry", "n_int": 34, "to": "pippin", "width": 1}, {"from": "merry", "n_int": 1, "to": "mr._maggot", "width": 1}, {"from": "merry", "n_int": 1, "to": "celeborn", "width": 1}, {"from": "merry", "n_int": 5, "to": "cotton", "width": 1}, {"from": "merry", "n_int": 1, "to": "bergil", "width": 1}, {"from": "merry", "n_int": 3, "to": "grishnakh", "width": 1}, {"from": "merry", "n_int": 1, "to": "otho", "width": 1}, {"from": "merry", "n_int": 3, "to": "eomer", "width": 1}, {"from": "merry", "n_int": 1, "to": "saruman", "width": 1}, {"from": "merry", "n_int": 1, "to": "elfhelm", "width": 1}, {"from": "merry", "n_int": 10, "to": "theoden", "width": 1}, {"from": "merry", "n_int": 3, "to": "ugluk", "width": 1}, {"from": "merry", "n_int": 1, "to": "lobelia", "width": 1}, {"from": "merry", "n_int": 15, "to": "sam", "width": 1}, {"from": "merry", "n_int": 2, "to": "haldir", "width": 1}, {"from": "merry", "n_int": 28, "to": "aragorn", "width": 1}, {"from": "merry", "n_int": 16, "to": "legolas", "width": 1}, {"from": "merry", "n_int": 1, "to": "young_tom", "width": 1}, {"from": "merry", "n_int": 14, "to": "gimli", "width": 1}, {"from": "merry", "n_int": 19, "to": "treebeard", "width": 1}, {"from": "merry", "n_int": 1, "to": "bill", "width": 1}, {"from": "merry", "n_int": 1, "to": "nazgul_lord", "width": 1}, {"from": "merry", "n_int": 14, "to": "gandalf", "width": 1}, {"from": "merry", "n_int": 1, "to": "bilbo", "width": 1}, {"from": "merry", "n_int": 39, "to": "frodo", "width": 1}, {"from": "sam", "n_int": 9, "to": "gandalf", "width": 1}, {"from": "sam", "n_int": 2, "to": "barliman", "width": 1}, {"from": "sam", "n_int": 1, "to": "hob", "width": 1}, {"from": "sam", "n_int": 3, "to": "shelob", "width": 1}, {"from": "sam", "n_int": 4, "to": "galadriel", "width": 1}, {"from": "sam", "n_int": 3, "to": "robin", "width": 1}, {"from": "sam", "n_int": 2, "to": "boromir", "width": 1}, {"from": "sam", "n_int": 19, "to": "pippin", "width": 1}, {"from": "sam", "n_int": 1, "to": "galandriel", "width": 1}, {"from": "sam", "n_int": 1, "to": "mrs._cotton", "width": 1}, {"from": "sam", "n_int": 3, "to": "cotton", "width": 1}, {"from": "sam", "n_int": 2, "to": "snaga", "width": 1}, {"from": "sam", "n_int": 3, "to": "tom", "width": 1}, {"from": "sam", "n_int": 1, "to": "rosie", "width": 1}, {"from": "sam", "n_int": 2, "to": "mablung", "width": 1}, {"from": "sam", "n_int": 18, "to": "aragorn", "width": 1}, {"from": "sam", "n_int": 4, "to": "gimli", "width": 1}, {"from": "sam", "n_int": 1, "to": "bill", "width": 1}, {"from": "sam", "n_int": 2, "to": "bilbo", "width": 1}, {"from": "sam", "n_int": 152, "to": "frodo", "width": 1}, {"from": "boromir", "n_int": 2, "to": "celeborn", "width": 1}, {"from": "boromir", "n_int": 1, "to": "galdor", "width": 1}, {"from": "boromir", "n_int": 1, "to": "legolas", "width": 1}, {"from": "boromir", "n_int": 4, "to": "gimli", "width": 1}, {"from": "boromir", "n_int": 1, "to": "pippin", "width": 1}, {"from": "boromir", "n_int": 8, "to": "elrond", "width": 1}, {"from": "boromir", "n_int": 17, "to": "gandalf", "width": 1}, {"from": "boromir", "n_int": 24, "to": "aragorn", "width": 1}, {"from": "boromir", "n_int": 8, "to": "frodo", "width": 1}, {"from": "celeborn", "n_int": 1, "to": "pippin", "width": 1}, {"from": "celeborn", "n_int": 3, "to": "galadriel", "width": 1}, {"from": "celeborn", "n_int": 1, "to": "galandriel", "width": 1}, {"from": "celeborn", "n_int": 2, "to": "legolas", "width": 1}, {"from": "celeborn", "n_int": 1, "to": "haldir", "width": 1}, {"from": "celeborn", "n_int": 4, "to": "aragorn", "width": 1}, {"from": "celeborn", "n_int": 2, "to": "gimli", "width": 1}, {"from": "celeborn", "n_int": 2, "to": "frodo", "width": 1}, {"from": "galdor", "n_int": 1, "to": "elrond", "width": 1}, {"from": "galdor", "n_int": 4, "to": "gandalf", "width": 1}, {"from": "legolas", "n_int": 10, "to": "pippin", "width": 1}, {"from": "legolas", "n_int": 1, "to": "gloin", "width": 1}, {"from": "legolas", "n_int": 3, "to": "haldir", "width": 1}, {"from": "legolas", "n_int": 53, "to": "gimli", "width": 1}, {"from": "legolas", "n_int": 2, "to": "imrahil", "width": 1}, {"from": "legolas", "n_int": 1, "to": "elladan", "width": 1}, {"from": "legolas", "n_int": 1, "to": "treebeard", "width": 1}, {"from": "legolas", "n_int": 2, "to": "eomer", "width": 1}, {"from": "legolas", "n_int": 1, "to": "hama", "width": 1}, {"from": "legolas", "n_int": 28, "to": "gandalf", "width": 1}, {"from": "legolas", "n_int": 39, "to": "aragorn", "width": 1}, {"from": "legolas", "n_int": 2, "to": "frodo", "width": 1}, {"from": "gimli", "n_int": 13, "to": "pippin", "width": 1}, {"from": "gimli", "n_int": 1, "to": "elrond", "width": 1}, {"from": "gimli", "n_int": 37, "to": "gandalf", "width": 1}, {"from": "gimli", "n_int": 43, "to": "aragorn", "width": 1}, {"from": "gimli", "n_int": 1, "to": "galadriel", "width": 1}, {"from": "gimli", "n_int": 1, "to": "elladan", "width": 1}, {"from": "gimli", "n_int": 7, "to": "eomer", "width": 1}, {"from": "gimli", "n_int": 2, "to": "saruman", "width": 1}, {"from": "gimli", "n_int": 1, "to": "gamling", "width": 1}, {"from": "gimli", "n_int": 1, "to": "theoden", "width": 1}, {"from": "gimli", "n_int": 3, "to": "haldir", "width": 1}, {"from": "gimli", "n_int": 1, "to": "treebeard", "width": 1}, {"from": "gimli", "n_int": 1, "to": "eothain", "width": 1}, {"from": "gimli", "n_int": 1, "to": "hama", "width": 1}, {"from": "gimli", "n_int": 3, "to": "frodo", "width": 1}, {"from": "mr._maggot", "n_int": 1, "to": "mrs._maggot", "width": 1}, {"from": "mr._maggot", "n_int": 3, "to": "pippin", "width": 1}, {"from": "mr._maggot", "n_int": 4, "to": "frodo", "width": 1}, {"from": "pippin", "n_int": 1, "to": "barliman", "width": 1}, {"from": "pippin", "n_int": 1, "to": "nob", "width": 1}, {"from": "pippin", "n_int": 1, "to": "hob", "width": 1}, {"from": "pippin", "n_int": 1, "to": "elrond", "width": 1}, {"from": "pippin", "n_int": 2, "to": "fredegar", "width": 1}, {"from": "pippin", "n_int": 4, "to": "bregalad", "width": 1}, {"from": "pippin", "n_int": 1, "to": "cotton", "width": 1}, {"from": "pippin", "n_int": 6, "to": "bergil", "width": 1}, {"from": "pippin", "n_int": 3, "to": "grishnakh", "width": 1}, {"from": "pippin", "n_int": 2, "to": "tom", "width": 1}, {"from": "pippin", "n_int": 1, "to": "eomer", "width": 1}, {"from": "pippin", "n_int": 2, "to": "ingold", "width": 1}, {"from": "pippin", "n_int": 10, "to": "denethor", "width": 1}, {"from": "pippin", "n_int": 2, "to": "theoden", "width": 1}, {"from": "pippin", "n_int": 3, "to": "ugluk", "width": 1}, {"from": "pippin", "n_int": 15, "to": "beregond", "width": 1}, {"from": "pippin", "n_int": 1, "to": "gildor", "width": 1}, {"from": "pippin", "n_int": 29, "to": "aragorn", "width": 1}, {"from": "pippin", "n_int": 21, "to": "treebeard", "width": 1}, {"from": "pippin", "n_int": 38, "to": "gandalf", "width": 1}, {"from": "pippin", "n_int": 3, "to": "bilbo", "width": 1}, {"from": "pippin", "n_int": 35, "to": "frodo", "width": 1}, {"from": "barliman", "n_int": 4, "to": "gandalf", "width": 1}, {"from": "barliman", "n_int": 4, "to": "aragorn", "width": 1}, {"from": "barliman", "n_int": 2, "to": "nob", "width": 1}, {"from": "barliman", "n_int": 1, "to": "mugwort", "width": 1}, {"from": "barliman", "n_int": 9, "to": "frodo", "width": 1}, {"from": "nob", "n_int": 2, "to": "aragorn", "width": 1}, {"from": "hob", "n_int": 1, "to": "frodo", "width": 1}, {"from": "elrond", "n_int": 1, "to": "gloin", "width": 1}, {"from": "elrond", "n_int": 1, "to": "erestor", "width": 1}, {"from": "elrond", "n_int": 2, "to": "glorfindel", "width": 1}, {"from": "elrond", "n_int": 7, "to": "gandalf", "width": 1}, {"from": "elrond", "n_int": 3, "to": "bilbo", "width": 1}, {"from": "elrond", "n_int": 6, "to": "frodo", "width": 1}, {"from": "fredegar", "n_int": 1, "to": "frodo", "width": 1}, {"from": "cotton", "n_int": 1, "to": "frodo", "width": 1}, {"from": "bergil", "n_int": 1, "to": "aragorn", "width": 1}, {"from": "tom", "n_int": 2, "to": "goldberry", "width": 1}, {"from": "tom", "n_int": 8, "to": "frodo", "width": 1}, {"from": "eomer", "n_int": 10, "to": "gandalf", "width": 1}, {"from": "eomer", "n_int": 27, "to": "aragorn", "width": 1}, {"from": "eomer", "n_int": 3, "to": "eowyn", "width": 1}, {"from": "eomer", "n_int": 1, "to": "halbarad", "width": 1}, {"from": "eomer", "n_int": 1, "to": "saruman", "width": 1}, {"from": "eomer", "n_int": 1, "to": "elfhelm", "width": 1}, {"from": "eomer", "n_int": 2, "to": "gamling", "width": 1}, {"from": "eomer", "n_int": 15, "to": "theoden", "width": 1}, {"from": "eomer", "n_int": 3, "to": "ghan", "width": 1}, {"from": "eomer", "n_int": 1, "to": "beregond", "width": 1}, {"from": "eomer", "n_int": 2, "to": "imrahil", "width": 1}, {"from": "eomer", "n_int": 1, "to": "eothain", "width": 1}, {"from": "eomer", "n_int": 1, "to": "wormtongue", "width": 1}, {"from": "ingold", "n_int": 2, "to": "gandalf", "width": 1}, {"from": "denethor", "n_int": 1, "to": "imrahil", "width": 1}, {"from": "denethor", "n_int": 11, "to": "gandalf", "width": 1}, {"from": "theoden", "n_int": 6, "to": "saruman", "width": 1}, {"from": "theoden", "n_int": 17, "to": "gandalf", "width": 1}, {"from": "theoden", "n_int": 6, "to": "aragorn", "width": 1}, {"from": "theoden", "n_int": 4, "to": "hama", "width": 1}, {"from": "theoden", "n_int": 5, "to": "eowyn", "width": 1}, {"from": "theoden", "n_int": 1, "to": "dunhere", "width": 1}, {"from": "theoden", "n_int": 1, "to": "ceorl", "width": 1}, {"from": "theoden", "n_int": 1, "to": "elfhelm", "width": 1}, {"from": "theoden", "n_int": 1, "to": "gamling", "width": 1}, {"from": "theoden", "n_int": 4, "to": "ghan", "width": 1}, {"from": "theoden", "n_int": 3, "to": "hirgon", "width": 1}, {"from": "theoden", "n_int": 3, "to": "wormtongue", "width": 1}, {"from": "ugluk", "n_int": 3, "to": "snaga", "width": 1}, {"from": "beregond", "n_int": 2, "to": "gandalf", "width": 1}, {"from": "beregond", "n_int": 1, "to": "aragorn", "width": 1}, {"from": "beregond", "n_int": 1, "to": "targon", "width": 1}, {"from": "gildor", "n_int": 5, "to": "frodo", "width": 1}, {"from": "aragorn", "n_int": 41, "to": "gandalf", "width": 1}, {"from": "aragorn", "n_int": 2, "to": "galadriel", "width": 1}, {"from": "aragorn", "n_int": 7, "to": "eowyn", "width": 1}, {"from": "aragorn", "n_int": 1, "to": "galandriel", "width": 1}, {"from": "aragorn", "n_int": 5, "to": "halbarad", "width": 1}, {"from": "aragorn", "n_int": 1, "to": "saruman", "width": 1}, {"from": "aragorn", "n_int": 1, "to": "gamling", "width": 1}, {"from": "aragorn", "n_int": 2, "to": "ioreth", "width": 1}, {"from": "aragorn", "n_int": 1, "to": "glorfindel", "width": 1}, {"from": "aragorn", "n_int": 1, "to": "nazgul_lieutenant", "width": 1}, {"from": "aragorn", "n_int": 3, "to": "treebeard", "width": 1}, {"from": "aragorn", "n_int": 6, "to": "imrahil", "width": 1}, {"from": "aragorn", "n_int": 1, "to": "bob", "width": 1}, {"from": "aragorn", "n_int": 2, "to": "elrohir", "width": 1}, {"from": "aragorn", "n_int": 2, "to": "hama", "width": 1}, {"from": "aragorn", "n_int": 1, "to": "bilbo", "width": 1}, {"from": "aragorn", "n_int": 40, "to": "frodo", "width": 1}, {"from": "treebeard", "n_int": 6, "to": "gandalf", "width": 1}, {"from": "galadriel", "n_int": 7, "to": "frodo", "width": 1}, {"from": "galandriel", "n_int": 1, "to": "saruman", "width": 1}, {"from": "snaga", "n_int": 2, "to": "shagrat", "width": 1}, {"from": "shagrat", "n_int": 1, "to": "gorbag", "width": 1}, {"from": "gloin", "n_int": 1, "to": "glorfindel", "width": 1}, {"from": "gloin", "n_int": 3, "to": "gandalf", "width": 1}, {"from": "gloin", "n_int": 5, "to": "frodo", "width": 1}, {"from": "imrahil", "n_int": 6, "to": "gandalf", "width": 1}, {"from": "mablung", "n_int": 2, "to": "damrod", "width": 1}, {"from": "mablung", "n_int": 1, "to": "frodo", "width": 1}, {"from": "damrod", "n_int": 1, "to": "frodo", "width": 1}, {"from": "warden", "n_int": 4, "to": "eowyn", "width": 1}, {"from": "erestor", "n_int": 1, "to": "glorfindel", "width": 1}, {"from": "erestor", "n_int": 2, "to": "gandalf", "width": 1}, {"from": "gaffer", "n_int": 1, "to": "frodo", "width": 1}, {"from": "gaffer", "n_int": 1, "to": "old_noakes", "width": 1}, {"from": "gaffer", "n_int": 1, "to": "daddy_twofoot", "width": 1}, {"from": "frodo", "n_int": 56, "to": "gandalf", "width": 1}, {"from": "frodo", "n_int": 18, "to": "bilbo", "width": 1}, {"from": "frodo", "n_int": 1, "to": "proudfoot", "width": 1}, {"from": "frodo", "n_int": 1, "to": "shelob", "width": 1}, {"from": "frodo", "n_int": 1, "to": "fatty", "width": 1}, {"from": "frodo", "n_int": 3, "to": "haldir", "width": 1}, {"from": "frodo", "n_int": 2, "to": "wormtongue", "width": 1}, {"from": "frodo", "n_int": 2, "to": "arwen", "width": 1}, {"from": "frodo", "n_int": 1, "to": "otho", "width": 1}, {"from": "frodo", "n_int": 3, "to": "saruman", "width": 1}, {"from": "frodo", "n_int": 3, "to": "glorfindel", "width": 1}, {"from": "frodo", "n_int": 2, "to": "lobelia", "width": 1}, {"from": "frodo", "n_int": 2, "to": "goldberry", "width": 1}, {"from": "frodo", "n_int": 1, "to": "bob", "width": 1}, {"from": "old_noakes", "n_int": 1, "to": "daddy_twofoot", "width": 1}, {"from": "eowyn", "n_int": 2, "to": "gandalf", "width": 1}, {"from": "eowyn", "n_int": 2, "to": "nazgul_lord", "width": 1}, {"from": "saruman", "n_int": 2, "to": "wormtongue", "width": 1}, {"from": "saruman", "n_int": 4, "to": "gandalf", "width": 1}, {"from": "nazgul_lord", "n_int": 1, "to": "gandalf", "width": 1}, {"from": "wormtongue", "n_int": 5, "to": "gandalf", "width": 1}, {"from": "wormtongue", "n_int": 2, "to": "hama", "width": 1}, {"from": "glorfindel", "n_int": 2, "to": "gandalf", "width": 1}, {"from": "everard", "n_int": 1, "to": "melilot", "width": 1}, {"from": "hama", "n_int": 3, "to": "gandalf", "width": 1}, {"from": "gandalf", "n_int": 6, "to": "bilbo", "width": 1}, {"from": "gandalf", "n_int": 1, "to": "gwaihir", "width": 1}, {"from": "gandalf", "n_int": 1, "to": "ioreth", "width": 1}, {"from": "gandalf", "n_int": 3, "to": "nazgul_lieutenant", "width": 1}, {"from": "gandalf", "n_int": 1, "to": "elrohir", "width": 1}, {"from": "bilbo", "n_int": 1, "to": "landir", "width": 1}, {"from": "bilbo", "n_int": 1, "to": "proudfoot", "width": 1}, {"from": "rory", "n_int": 1, "to": "esmeralda", "width": 1}]);
+
+                  nodeColors = {};
+                  allNodes = nodes.get({ returnType: "Object" });
+                  for (nodeId in allNodes) {
+                    nodeColors[nodeId] = allNodes[nodeId].color;
+                  }
+                  allEdges = edges.get({ returnType: "Object" });
+                  // adding nodes and edges to the graph
+                  data = {nodes: nodes, edges: edges};
+
+                  var options = {
+    "configure": {
+        "enabled": false
+    },
+    "edges": {
+        "color": {
+            "inherit": true
+        },
+        "smooth": {
+            "enabled": true,
+            "type": "dynamic"
+        }
+    },
+    "interaction": {
+        "dragNodes": true,
+        "hideEdgesOnDrag": false,
+        "hideNodesOnDrag": false
+    },
+    "physics": {
+        "enabled": true,
+        "stabilization": {
+            "enabled": true,
+            "fit": true,
+            "iterations": 1000,
+            "onlyDynamicEdges": false,
+            "updateInterval": 50
+        }
+    }
+};
+
+                  
+
+
+                  
+
+                  network = new vis.Network(container, data, options);
+
+                  
+
+                  
+
+                  
+
+
+                  
+
+                  return network;
+
+              }
+              drawGraph();
+        </script>
+    </body>
+</html>
