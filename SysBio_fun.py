@@ -56,15 +56,17 @@ def get_largest_component(g, is_undirected=True):
     return l_comp
 
 
-def graph_info(g):
+def graph_info(g, basic=False):
     print(f"\nNumber of nodes: {g.number_of_nodes()}")
     print(f"Number of edges: {g.number_of_edges()}")
-    try:
-        print(f"Is connected:    {nx.is_connected(g)}")
-    except:
-        print("""\
+    
+    if basic == False:
+        try:
+            print(f"Is connected:    {nx.is_connected(g)}")
+        except:
+            print("""\
 The graph is not undirected. Therefore .is_connected() does not work.
-        """)
+            """)
 
 
 def show_html(graph, name="nx", show=True, size="small", more=False):
@@ -108,7 +110,7 @@ def nice_plot(title, xlab, ylab, show=True):
         plt.show()
 
 
-def plot_degree_distribution(graph):
+def degree_distribution(graph):
     """
     Function that returns a scatter plot of the degree
     distribution of a graph. 
@@ -118,18 +120,20 @@ def plot_degree_distribution(graph):
     x = np.arange(len(y))[y != 0]  # x values
     y = y[y != 0]  # Remove the values = 0 from the array
     
-    return [x, y]
-    #return plt.scatter(x,y)
+    return x, y
 
 
 def multi_plot(plot_type, lst_of_xs, lst_of_ys):
-    figure, axis = plt.subplots(1, len(lst_of_ys))
-    
+    # Check if plot type is valid:
     plot_types = ["scatter", "plot"]
     if plot_type not in plot_types:
         raise Exception(f"Method {plot_type} not implemented for axis")
+    
+    nplots = len(lst_of_xs)
+    figure, axis = plt.subplots(1, nplots)
+    
         
-    for i in range(len(lst_of_ys)):
+    for i in range(nplots):
         eval(f"axis[{i}].{plot_type}(lst_of_xs[{i}],lst_of_ys[{i}])")
     
     plt.show()

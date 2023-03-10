@@ -1,0 +1,621 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        
+            <script>function neighbourhoodHighlight(params) {
+  // console.log("in nieghbourhoodhighlight");
+  allNodes = nodes.get({ returnType: "Object" });
+  // originalNodes = JSON.parse(JSON.stringify(allNodes));
+  // if something is selected:
+  if (params.nodes.length > 0) {
+    highlightActive = true;
+    var i, j;
+    var selectedNode = params.nodes[0];
+    var degrees = 2;
+
+    // mark all nodes as hard to read.
+    for (let nodeId in allNodes) {
+      // nodeColors[nodeId] = allNodes[nodeId].color;
+      allNodes[nodeId].color = "rgba(200,200,200,0.5)";
+      if (allNodes[nodeId].hiddenLabel === undefined) {
+        allNodes[nodeId].hiddenLabel = allNodes[nodeId].label;
+        allNodes[nodeId].label = undefined;
+      }
+    }
+    var connectedNodes = network.getConnectedNodes(selectedNode);
+    var allConnectedNodes = [];
+
+    // get the second degree nodes
+    for (i = 1; i < degrees; i++) {
+      for (j = 0; j < connectedNodes.length; j++) {
+        allConnectedNodes = allConnectedNodes.concat(
+          network.getConnectedNodes(connectedNodes[j])
+        );
+      }
+    }
+
+    // all second degree nodes get a different color and their label back
+    for (i = 0; i < allConnectedNodes.length; i++) {
+      // allNodes[allConnectedNodes[i]].color = "pink";
+      allNodes[allConnectedNodes[i]].color = "rgba(150,150,150,0.75)";
+      if (allNodes[allConnectedNodes[i]].hiddenLabel !== undefined) {
+        allNodes[allConnectedNodes[i]].label =
+          allNodes[allConnectedNodes[i]].hiddenLabel;
+        allNodes[allConnectedNodes[i]].hiddenLabel = undefined;
+      }
+    }
+
+    // all first degree nodes get their own color and their label back
+    for (i = 0; i < connectedNodes.length; i++) {
+      // allNodes[connectedNodes[i]].color = undefined;
+      allNodes[connectedNodes[i]].color = nodeColors[connectedNodes[i]];
+      if (allNodes[connectedNodes[i]].hiddenLabel !== undefined) {
+        allNodes[connectedNodes[i]].label =
+          allNodes[connectedNodes[i]].hiddenLabel;
+        allNodes[connectedNodes[i]].hiddenLabel = undefined;
+      }
+    }
+
+    // the main node gets its own color and its label back.
+    // allNodes[selectedNode].color = undefined;
+    allNodes[selectedNode].color = nodeColors[selectedNode];
+    if (allNodes[selectedNode].hiddenLabel !== undefined) {
+      allNodes[selectedNode].label = allNodes[selectedNode].hiddenLabel;
+      allNodes[selectedNode].hiddenLabel = undefined;
+    }
+  } else if (highlightActive === true) {
+    // console.log("highlightActive was true");
+    // reset all nodes
+    for (let nodeId in allNodes) {
+      // allNodes[nodeId].color = "purple";
+      allNodes[nodeId].color = nodeColors[nodeId];
+      // delete allNodes[nodeId].color;
+      if (allNodes[nodeId].hiddenLabel !== undefined) {
+        allNodes[nodeId].label = allNodes[nodeId].hiddenLabel;
+        allNodes[nodeId].hiddenLabel = undefined;
+      }
+    }
+    highlightActive = false;
+  }
+
+  // transform the object into an array
+  var updateArray = [];
+  if (params.nodes.length > 0) {
+    for (let nodeId in allNodes) {
+      if (allNodes.hasOwnProperty(nodeId)) {
+        // console.log(allNodes[nodeId]);
+        updateArray.push(allNodes[nodeId]);
+      }
+    }
+    nodes.update(updateArray);
+  } else {
+    // console.log("Nothing was selected");
+    for (let nodeId in allNodes) {
+      if (allNodes.hasOwnProperty(nodeId)) {
+        // console.log(allNodes[nodeId]);
+        // allNodes[nodeId].color = {};
+        updateArray.push(allNodes[nodeId]);
+      }
+    }
+    nodes.update(updateArray);
+  }
+}
+
+function filterHighlight(params) {
+  allNodes = nodes.get({ returnType: "Object" });
+  // if something is selected:
+  if (params.nodes.length > 0) {
+    filterActive = true;
+    let selectedNodes = params.nodes;
+
+    // hiding all nodes and saving the label
+    for (let nodeId in allNodes) {
+      allNodes[nodeId].hidden = true;
+      if (allNodes[nodeId].savedLabel === undefined) {
+        allNodes[nodeId].savedLabel = allNodes[nodeId].label;
+        allNodes[nodeId].label = undefined;
+      }
+    }
+
+    for (let i=0; i < selectedNodes.length; i++) {
+      allNodes[selectedNodes[i]].hidden = false;
+      if (allNodes[selectedNodes[i]].savedLabel !== undefined) {
+        allNodes[selectedNodes[i]].label = allNodes[selectedNodes[i]].savedLabel;
+        allNodes[selectedNodes[i]].savedLabel = undefined;
+      }
+    }
+
+  } else if (filterActive === true) {
+    // reset all nodes
+    for (let nodeId in allNodes) {
+      allNodes[nodeId].hidden = false;
+      if (allNodes[nodeId].savedLabel !== undefined) {
+        allNodes[nodeId].label = allNodes[nodeId].savedLabel;
+        allNodes[nodeId].savedLabel = undefined;
+      }
+    }
+    filterActive = false;
+  }
+
+  // transform the object into an array
+  var updateArray = [];
+  if (params.nodes.length > 0) {
+    for (let nodeId in allNodes) {
+      if (allNodes.hasOwnProperty(nodeId)) {
+        updateArray.push(allNodes[nodeId]);
+      }
+    }
+    nodes.update(updateArray);
+  } else {
+    for (let nodeId in allNodes) {
+      if (allNodes.hasOwnProperty(nodeId)) {
+        updateArray.push(allNodes[nodeId]);
+      }
+    }
+    nodes.update(updateArray);
+  }
+}
+
+function selectNode(nodes) {
+  network.selectNodes(nodes);
+  neighbourhoodHighlight({ nodes: nodes });
+  return nodes;
+}
+
+function selectNodes(nodes) {
+  network.selectNodes(nodes);
+  filterHighlight({nodes: nodes});
+  return nodes;
+}
+
+function highlightFilter(filter) {
+  let selectedNodes = []
+  let selectedProp = filter['property']
+  if (filter['item'] === 'node') {
+    let allNodes = nodes.get({ returnType: "Object" });
+    for (let nodeId in allNodes) {
+      if (allNodes[nodeId][selectedProp] && filter['value'].includes((allNodes[nodeId][selectedProp]).toString())) {
+        selectedNodes.push(nodeId)
+      }
+    }
+  }
+  else if (filter['item'] === 'edge'){
+    let allEdges = edges.get({returnType: 'object'});
+    // check if the selected property exists for selected edge and select the nodes connected to the edge
+    for (let edge in allEdges) {
+      if (allEdges[edge][selectedProp] && filter['value'].includes((allEdges[edge][selectedProp]).toString())) {
+        selectedNodes.push(allEdges[edge]['from'])
+        selectedNodes.push(allEdges[edge]['to'])
+      }
+    }
+  }
+  selectNodes(selectedNodes)
+}</script>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/dist/vis-network.min.css" integrity="sha512-WgxfT5LWjfszlPHXRmBWHkV2eceiWTOBvrKCNbdgDYTHrT2AeLCGbF4sZlZw3UMN3WtL0tGUoIAKsu8mllg/XA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/vis-network.min.js" integrity="sha512-LnvoEWDFrqGHlHmDD2101OrLcbsfkrzoSpvtSQtxK3RMnRV0eOkhhBN2dXHKRrUU8p2DGRTk35n4O8nWSVe1mQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+            
+            
+            
+            
+            
+            
+                <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tom-select/2.0.0-rc.4/css/tom-select.min.css" integrity="sha512-43fHB3GLgZfz8QXl1RPQ8O66oIgv3po9cJ5erMt1c4QISq9dYb195T3vr5ImnJPXuVroKcGBPXBFKETW8jrPNQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+                <script src="https://cdnjs.cloudflare.com/ajax/libs/tom-select/2.0.0-rc.4/js/tom-select.complete.js" integrity="sha512-jeF9CfnvzDiw9G9xiksVjxR2lib44Gnovvkv+3CgCG6NXCD4gqlA5nDAVW5WjpA+i+/zKsUWV5xNEbW1X/HH0Q==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+            
+
+        
+<center>
+<h1></h1>
+</center>
+
+<!-- <link rel="stylesheet" href="../node_modules/vis/dist/vis.min.css" type="text/css" />
+<script type="text/javascript" src="../node_modules/vis/dist/vis.js"> </script>-->
+        <link
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css"
+          rel="stylesheet"
+          integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6"
+          crossorigin="anonymous"
+        />
+        <script
+          src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js"
+          integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf"
+          crossorigin="anonymous"
+        ></script>
+
+
+        <center>
+          <h1></h1>
+        </center>
+        <style type="text/css">
+
+             #mynetwork {
+                 width: 1920px;
+                 height: 1080px;
+                 background-color: #ffffff;
+                 border: 1px solid lightgray;
+                 position: relative;
+                 float: left;
+             }
+
+             
+
+             
+             #config {
+                 float: left;
+                 width: 400px;
+                 height: 600px;
+             }
+             
+
+             
+        </style>
+    </head>
+
+
+    <body>
+        <div class="card" style="width: 100%">
+            
+                <div id="select-menu" class="card-header">
+                    <div class="row no-gutters">
+                        <div class="col-10 pb-2">
+                            <select
+                            class="form-select"
+                            aria-label="Default select example"
+                            onchange="selectNode([value]);"
+                            id="select-node"
+                            placeholder="Select node..."
+                            >
+                                <option selected>Select a Node by ID</option>
+                                
+                                    <option value="YFL039C">YFL039C</option>
+                                
+                                    <option value="YDR359C">YDR359C</option>
+                                
+                                    <option value="YNL107W">YNL107W</option>
+                                
+                                    <option value="YDR334W">YDR334W</option>
+                                
+                                    <option value="YOL012C">YOL012C</option>
+                                
+                                    <option value="YNL136W">YNL136W</option>
+                                
+                                    <option value="YDL160C">YDL160C</option>
+                                
+                                    <option value="YGR002C">YGR002C</option>
+                                
+                                    <option value="YLR399C">YLR399C</option>
+                                
+                                    <option value="YAL011W">YAL011W</option>
+                                
+                                    <option value="YBR010W">YBR010W</option>
+                                
+                                    <option value="YGL178W">YGL178W</option>
+                                
+                                    <option value="YDL140C">YDL140C</option>
+                                
+                                    <option value="YHR090C">YHR090C</option>
+                                
+                                    <option value="YML010W">YML010W</option>
+                                
+                                    <option value="YLR396C">YLR396C</option>
+                                
+                                    <option value="YPR187W">YPR187W</option>
+                                
+                                    <option value="YIL021W">YIL021W</option>
+                                
+                                    <option value="YOR151C">YOR151C</option>
+                                
+                                    <option value="YBR154C">YBR154C</option>
+                                
+                                    <option value="YER125W">YER125W</option>
+                                
+                                    <option value="YGR063C">YGR063C</option>
+                                
+                                    <option value="YDR404C">YDR404C</option>
+                                
+                                    <option value="YMR231W">YMR231W</option>
+                                
+                                    <option value="YLR148W">YLR148W</option>
+                                
+                                    <option value="YDR080W">YDR080W</option>
+                                
+                                    <option value="YPL045W">YPL045W</option>
+                                
+                                    <option value="YJL168C">YJL168C</option>
+                                
+                                    <option value="YLR421C">YLR421C</option>
+                                
+                            </select>
+                        </div>
+                        <div class="col-2 pb-2">
+                            <button type="button" class="btn btn-primary btn-block" onclick="neighbourhoodHighlight({nodes: []});">Reset Selection</button>
+                        </div>
+                    </div>
+                </div>
+            
+            
+              <div id="filter-menu" class="card-header">
+                <div class="row no-gutters">
+                  <div class="col-3 pb-2">
+                    <select
+                            class="form-select"
+                            aria-label="Default select example"
+                            onchange="updateFilter(value, 'item')"
+                            id="select-item"
+                        >
+                        <option value="">Select a network item</option>
+                        <option value="edge">edge</option>
+                        <option value="node">node</option>
+                    </select>
+                  </div>
+                  <div class="col-3 pb-2">
+                    <select
+                            class="form-select"
+                            aria-label="Default select example"
+                            onchange="updateFilter(value, 'property')"
+                            id="select-property"
+                        >
+                        <option value="">Select a property...</option>
+                    </select>
+                  </div>
+                  <div class="col-3 pb-2">
+                    <select
+                            class="form-select"
+                            aria-label="Default select example"
+                            id="select-value"
+                        >
+                        <option value="">Select value(s)...</option>
+                    </select>
+                  </div>
+                  <div class="col-1 pb-2">
+                    <button type="button" class="btn btn-primary btn-block" onclick="highlightFilter(filter);">Filter</button>
+                  </div>
+                  <div class="col-2 pb-2">
+                    <button type="button" class="btn btn-primary btn-block" onclick="clearFilter(true)">Reset Selection</button>
+                  </div>
+                </div>
+              </div>
+            
+            <div id="mynetwork" class="card-body"></div>
+        </div>
+
+        
+        
+            <div id="config"></div>
+        
+
+        <script type="text/javascript">
+
+              // initialize global variables.
+              var edges;
+              var nodes;
+              var allNodes;
+              var allEdges;
+              var nodeColors;
+              var originalNodes;
+              var network;
+              var container;
+              var options, data;
+              var filter = {
+                  item : '',
+                  property : '',
+                  value : []
+              };
+
+              
+                  new TomSelect("#select-node",{
+                      create: false,
+                      sortField: {
+                          field: "text",
+                          direction: "asc"
+                      }
+                  });
+              
+
+              
+                  // explicitly using onItemAdd and this function as we need to save multiple values
+                  let updateValueFilter = function() {
+                      return function () {
+                      filter['value'].push(arguments[0])
+                      }
+                  }
+
+                  let valueControl = new TomSelect("#select-value",{
+                      maxItems: null,
+                      valueField: 'id',
+                      labelField: 'title',
+                      searchField: 'title',
+                      create: false,
+                      sortField: {
+                          field: "text",
+                          direction: "asc"
+                      },
+                      onItemAdd: updateValueFilter()
+                  });
+
+                  let addValues = function() {
+                      return function () {
+                          // clear the current value options and add the selected attribute values
+                          // tom-select handles duplicates
+                          let selectedProperty = arguments[0];
+                          valueControl.clear();
+                          valueControl.clearOptions();
+                          filter['value'] = []
+                          if (filter['item'] === 'node') {
+                              for (let each in allNodes) {
+                                  valueControl.addOption({
+                                      id:allNodes[each][selectedProperty],
+                                      title:allNodes[each][selectedProperty]
+                                  })
+                              }
+                          }
+                          else if (filter['item'] === 'edge') {
+                              for (let each in allEdges) {
+                                  valueControl.addOption({
+                                      id:allEdges[each][selectedProperty],
+                                      title:allEdges[each][selectedProperty]
+                                  })
+                              }
+                          }
+                      }
+                  };
+
+                  let propControl = new TomSelect("#select-property",{
+                      valueField: 'id',
+                      labelField: 'title',
+                      searchField: 'title',
+                      create: false,
+                      sortField: {
+                          field: "text",
+                          direction: "asc"
+                      },
+                      onItemAdd: addValues()
+                  });
+
+                  let addProperties = function() {
+                      return function () {
+                          // loops through the selected network item and adds the attributes to dropdown
+                          // tom-select handles duplicates
+                          clearFilter(false)
+                          if (arguments[0] === 'edge') {
+                              for (let each in allEdges) {
+                                  if (allEdges.hasOwnProperty(each)) {
+                                      for (let eachProp in allEdges[each]) {
+                                          if (allEdges[each].hasOwnProperty(eachProp)) {
+                                              propControl.addOption({id: eachProp, title: eachProp})
+                                          }
+                                      }
+                                  }
+                              }
+                          }
+                          else if (arguments[0] === 'node') {
+                              for (let each in allNodes) {
+                                  if (allNodes.hasOwnProperty(each)) {
+                                      for (let eachProp in allNodes[each]) {
+                                          if (allNodes[each].hasOwnProperty(eachProp)
+                                              && (eachProp !== 'hidden' && eachProp !== 'savedLabel'
+                                                  && eachProp !== 'hiddenLabel')) {
+                                              propControl.addOption({id: eachProp, title: eachProp})
+
+                                          }
+                                      }
+                                  }
+                              }
+                          }
+                      }
+                  };
+
+                  let itemControl = new TomSelect("#select-item",{
+                      create: false,
+                      sortField:{
+                          field: "text",
+                          direction: "asc"
+                      },
+                      onItemAdd: addProperties()
+                  });
+
+                  function clearFilter(reset) {
+                      // utility function to clear all the selected filter options
+                      // if reset is set to true, the existing filter will be removed
+                      // else, only the dropdown options are cleared
+                      propControl.clear();
+                      propControl.clearOptions();
+                      valueControl.clear();
+                      valueControl.clearOptions();
+                      filter = {
+                          item : '',
+                          property : '',
+                          value : []
+                      }
+                      if (reset) {
+                          itemControl.clear();
+                          filterHighlight({nodes: []})
+                      }
+                  }
+
+                  function updateFilter(value, key) {
+                      // key could be 'item' or 'property' and value is as selected in dropdown
+                      filter[key] = value
+                  }
+
+              
+
+              // This method is responsible for drawing the graph, returns the drawn network
+              function drawGraph() {
+                  var container = document.getElementById('mynetwork');
+
+                  
+
+                  // parsing and collecting nodes and edges from the python
+                  nodes = new vis.DataSet([{"color": "#97c2fc", "id": "YFL039C", "label": "YFL039C", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "YDR359C", "label": "YDR359C", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "YNL107W", "label": "YNL107W", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "YDR334W", "label": "YDR334W", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "YOL012C", "label": "YOL012C", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "YNL136W", "label": "YNL136W", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "YDL160C", "label": "YDL160C", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "YGR002C", "label": "YGR002C", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "YLR399C", "label": "YLR399C", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "YAL011W", "label": "YAL011W", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "YBR010W", "label": "YBR010W", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "YGL178W", "label": "YGL178W", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "YDL140C", "label": "YDL140C", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "YHR090C", "label": "YHR090C", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "YML010W", "label": "YML010W", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "YLR396C", "label": "YLR396C", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "YPR187W", "label": "YPR187W", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "YIL021W", "label": "YIL021W", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "YOR151C", "label": "YOR151C", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "YBR154C", "label": "YBR154C", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "YER125W", "label": "YER125W", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "YGR063C", "label": "YGR063C", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "YDR404C", "label": "YDR404C", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "YMR231W", "label": "YMR231W", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "YLR148W", "label": "YLR148W", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "YDR080W", "label": "YDR080W", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "YPL045W", "label": "YPL045W", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "YJL168C", "label": "YJL168C", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "YLR421C", "label": "YLR421C", "shape": "dot", "size": 10}]);
+                  edges = new vis.DataSet([{"#BioGRID Interaction ID": 299922, "Author": "Szerlong H (2008)", "BioGRID ID Interactor A": 32415, "BioGRID ID Interactor B": 31107, "Entrez Gene Interactor A": "851962", "Entrez Gene Interactor B": "850504", "Experimental System": "Affinity Capture-Western", "Experimental System Type": "physical", "Modification": "-", "Official Symbol Interactor A": "EAF1", "Official Symbol Interactor B": "ACT1", "Organism Interactor A": 559292, "Organism Interactor B": 559292, "Phenotypes": "-", "Pubmed ID": 18408732, "Qualifications": "-", "Score": "-", "Source Database": "BIOGRID", "Synonyms Interactor A": "VID21", "Synonyms Interactor B": "ABY1|END7|actin|L000000025", "Tags": "-", "Throughput": "Low Throughput", "from": "YFL039C", "to": "YDR359C", "width": 1}, {"#BioGRID Interaction ID": 147139, "Author": "Zhang H (2004)", "BioGRID ID Interactor A": 35717, "BioGRID ID Interactor B": 31107, "Entrez Gene Interactor A": "855616", "Entrez Gene Interactor B": "850504", "Experimental System": "Affinity Capture-MS", "Experimental System Type": "physical", "Modification": "-", "Official Symbol Interactor A": "YAF9", "Official Symbol Interactor B": "ACT1", "Organism Interactor A": 559292, "Organism Interactor B": 559292, "Phenotypes": "-", "Pubmed ID": 15485911, "Qualifications": "-", "Score": "-", "Source Database": "BIOGRID", "Synonyms Interactor A": "S000007495", "Synonyms Interactor B": "ABY1|END7|actin|L000000025", "Tags": "-", "Throughput": "Low Throughput", "from": "YFL039C", "to": "YNL107W", "width": 1}, {"#BioGRID Interaction ID": 2406179, "Author": "Lin CL (2017)", "BioGRID ID Interactor A": 32391, "BioGRID ID Interactor B": 31107, "Entrez Gene Interactor A": "851934", "Entrez Gene Interactor B": "850504", "Experimental System": "Reconstituted Complex", "Experimental System Type": "physical", "Modification": "-", "Official Symbol Interactor A": "SWR1", "Official Symbol Interactor B": "ACT1", "Organism Interactor A": 559292, "Organism Interactor B": 559292, "Phenotypes": "-", "Pubmed ID": 28499038, "Qualifications": "-", "Score": "-", "Source Database": "BIOGRID", "Synonyms Interactor A": "chromatin-remodeling protein SWR1|S000007447", "Synonyms Interactor B": "ABY1|END7|actin|L000000025", "Tags": "-", "Throughput": "Low Throughput", "from": "YFL039C", "to": "YDR334W", "width": 1}, {"#BioGRID Interaction ID": 238871, "Author": "Luk E (2007)", "BioGRID ID Interactor A": 34392, "BioGRID ID Interactor B": 31107, "Entrez Gene Interactor A": "854150", "Entrez Gene Interactor B": "850504", "Experimental System": "Affinity Capture-MS", "Experimental System Type": "physical", "Modification": "-", "Official Symbol Interactor A": "HTZ1", "Official Symbol Interactor B": "ACT1", "Organism Interactor A": 559292, "Organism Interactor B": 559292, "Phenotypes": "-", "Pubmed ID": 17289584, "Qualifications": "-", "Score": "-", "Source Database": "BIOGRID", "Synonyms Interactor A": "HTA3|histone H2AZ|H2AZ|H2A.F/Z|L000003930|L000004094", "Synonyms Interactor B": "ABY1|END7|actin|L000000025", "Tags": "-", "Throughput": "Low Throughput", "from": "YFL039C", "to": "YOL012C", "width": 1}, {"#BioGRID Interaction ID": 2397149, "Author": "Rossetto D (2014)", "BioGRID ID Interactor A": 35690, "BioGRID ID Interactor B": 31107, "Entrez Gene Interactor A": "855586", "Entrez Gene Interactor B": "850504", "Experimental System": "Affinity Capture-MS", "Experimental System Type": "physical", "Modification": "-", "Official Symbol Interactor A": "EAF7", "Official Symbol Interactor B": "ACT1", "Organism Interactor A": 559292, "Organism Interactor B": 559292, "Phenotypes": "-", "Pubmed ID": 24843044, "Qualifications": "-", "Score": "-", "Source Database": "BIOGRID", "Synonyms Interactor A": "-", "Synonyms Interactor B": "ABY1|END7|actin|L000000025", "Tags": "-", "Throughput": "Low Throughput", "from": "YFL039C", "to": "YNL136W", "width": 1}, {"#BioGRID Interaction ID": 2389248, "Author": "Jungfleisch J (2017)", "BioGRID ID Interactor A": 31903, "BioGRID ID Interactor B": 31107, "Entrez Gene Interactor A": "851394", "Entrez Gene Interactor B": "850504", "Experimental System": "Affinity Capture-RNA", "Experimental System Type": "physical", "Modification": "-", "Official Symbol Interactor A": "DHH1", "Official Symbol Interactor B": "ACT1", "Organism Interactor A": 559292, "Organism Interactor B": 559292, "Phenotypes": "-", "Pubmed ID": 27821408, "Qualifications": "CRAC", "Score": "-", "Source Database": "BIOGRID", "Synonyms Interactor A": "DExD/H-box ATP-dependent RNA helicase DHH1|L000000504", "Synonyms Interactor B": "ABY1|END7|actin|L000000025", "Tags": "-", "Throughput": "High Throughput", "from": "YFL039C", "to": "YDL160C", "width": 1}, {"#BioGRID Interaction ID": 559953, "Author": "Wang AY (2011)", "BioGRID ID Interactor A": 34392, "BioGRID ID Interactor B": 33246, "Entrez Gene Interactor A": "854150", "Entrez Gene Interactor B": "852885", "Experimental System": "Affinity Capture-Western", "Experimental System Type": "physical", "Modification": "-", "Official Symbol Interactor A": "HTZ1", "Official Symbol Interactor B": "SWC4", "Organism Interactor A": 559292, "Organism Interactor B": 559292, "Phenotypes": "-", "Pubmed ID": 21791612, "Qualifications": "-", "Score": "-", "Source Database": "BIOGRID", "Synonyms Interactor A": "HTA3|histone H2AZ|H2AZ|H2A.F/Z|L000003930|L000004094", "Synonyms Interactor B": "EAF2|GOD1", "Tags": "-", "Throughput": "Low Throughput", "from": "YOL012C", "to": "YGR002C", "width": 1}, {"#BioGRID Interaction ID": 238872, "Author": "Luk E (2007)", "BioGRID ID Interactor A": 34392, "BioGRID ID Interactor B": 35717, "Entrez Gene Interactor A": "854150", "Entrez Gene Interactor B": "855616", "Experimental System": "Affinity Capture-MS", "Experimental System Type": "physical", "Modification": "-", "Official Symbol Interactor A": "HTZ1", "Official Symbol Interactor B": "YAF9", "Organism Interactor A": 559292, "Organism Interactor B": 559292, "Phenotypes": "-", "Pubmed ID": 17289584, "Qualifications": "-", "Score": "-", "Source Database": "BIOGRID", "Synonyms Interactor A": "HTA3|histone H2AZ|H2AZ|H2A.F/Z|L000003930|L000004094", "Synonyms Interactor B": "S000007495", "Tags": "-", "Throughput": "Low Throughput", "from": "YOL012C", "to": "YNL107W", "width": 1}, {"#BioGRID Interaction ID": 1277406, "Author": "Ranjan A (2015)", "BioGRID ID Interactor A": 32391, "BioGRID ID Interactor B": 34392, "Entrez Gene Interactor A": "851934", "Entrez Gene Interactor B": "854150", "Experimental System": "Reconstituted Complex", "Experimental System Type": "physical", "Modification": "-", "Official Symbol Interactor A": "SWR1", "Official Symbol Interactor B": "HTZ1", "Organism Interactor A": 559292, "Organism Interactor B": 559292, "Phenotypes": "-", "Pubmed ID": 26116819, "Qualifications": "Figure S1", "Score": "-", "Source Database": "BIOGRID", "Synonyms Interactor A": "chromatin-remodeling protein SWR1|S000007447", "Synonyms Interactor B": "HTA3|histone H2AZ|H2AZ|H2A.F/Z|L000003930|L000004094", "Tags": "-", "Throughput": "Low Throughput", "from": "YOL012C", "to": "YDR334W", "width": 1}, {"#BioGRID Interaction ID": 516712, "Author": "Krogan NJ (2003)", "BioGRID ID Interactor A": 34392, "BioGRID ID Interactor B": 31658, "Entrez Gene Interactor A": "854150", "Entrez Gene Interactor B": "851115", "Experimental System": "Affinity Capture-Western", "Experimental System Type": "physical", "Modification": "-", "Official Symbol Interactor A": "HTZ1", "Official Symbol Interactor B": "BDF1", "Organism Interactor A": 559292, "Organism Interactor B": 559292, "Phenotypes": "-", "Pubmed ID": 14690608, "Qualifications": "-", "Score": "-", "Source Database": "BIOGRID", "Synonyms Interactor A": "HTA3|histone H2AZ|H2AZ|H2A.F/Z|L000003930|L000004094", "Synonyms Interactor B": "chromatin-binding protein BDF1|L000000165", "Tags": "-", "Throughput": "Low Throughput", "from": "YOL012C", "to": "YLR399C", "width": 1}, {"#BioGRID Interaction ID": 559952, "Author": "Wang AY (2011)", "BioGRID ID Interactor A": 34392, "BioGRID ID Interactor B": 31755, "Entrez Gene Interactor A": "854150", "Entrez Gene Interactor B": "851222", "Experimental System": "Affinity Capture-Western", "Experimental System Type": "physical", "Modification": "-", "Official Symbol Interactor A": "HTZ1", "Official Symbol Interactor B": "SWC3", "Organism Interactor A": 559292, "Organism Interactor B": 559292, "Phenotypes": "-", "Pubmed ID": 21791612, "Qualifications": "-", "Score": "-", "Source Database": "BIOGRID", "Synonyms Interactor A": "HTA3|histone H2AZ|H2AZ|H2A.F/Z|L000003930|L000004094", "Synonyms Interactor B": "SWC1", "Tags": "-", "Throughput": "Low Throughput", "from": "YOL012C", "to": "YAL011W", "width": 1}, {"#BioGRID Interaction ID": 2342289, "Author": "Jeronimo C (2015)", "BioGRID ID Interactor A": 32711, "BioGRID ID Interactor B": 34392, "Entrez Gene Interactor A": "852295", "Entrez Gene Interactor B": "854150", "Experimental System": "Reconstituted Complex", "Experimental System Type": "physical", "Modification": "-", "Official Symbol Interactor A": "HHT1", "Official Symbol Interactor B": "HTZ1", "Organism Interactor A": 559292, "Organism Interactor B": 559292, "Phenotypes": "-", "Pubmed ID": 25959393, "Qualifications": "-", "Score": "-", "Source Database": "BIOGRID", "Synonyms Interactor A": "BUR5|SIN2|histone H3|L000000772", "Synonyms Interactor B": "HTA3|histone H2AZ|H2AZ|H2A.F/Z|L000003930|L000004094", "Tags": "-", "Throughput": "Low Throughput", "from": "YOL012C", "to": "YBR010W", "width": 1}, {"#BioGRID Interaction ID": 2452964, "Author": "Lapointe CP (2017)", "BioGRID ID Interactor A": 33076, "BioGRID ID Interactor B": 34392, "Entrez Gene Interactor A": "852697", "Entrez Gene Interactor B": "854150", "Experimental System": "Affinity Capture-RNA", "Experimental System Type": "physical", "Modification": "-", "Official Symbol Interactor A": "MPT5", "Official Symbol Interactor B": "HTZ1", "Organism Interactor A": 559292, "Organism Interactor B": 559292, "Phenotypes": "-", "Pubmed ID": 28768715, "Qualifications": "-", "Score": "-", "Source Database": "BIOGRID", "Synonyms Interactor A": "HTR1|PUF5|UTH4|L000001146", "Synonyms Interactor B": "HTA3|histone H2AZ|H2AZ|H2A.F/Z|L000003930|L000004094", "Tags": "-", "Throughput": "High Throughput", "from": "YOL012C", "to": "YGL178W", "width": 1}, {"#BioGRID Interaction ID": 2203764, "Author": "Sathianathan A (2016)", "BioGRID ID Interactor A": 32415, "BioGRID ID Interactor B": 31921, "Entrez Gene Interactor A": "851962", "Entrez Gene Interactor B": "851415", "Experimental System": "Affinity Capture-Western", "Experimental System Type": "physical", "Modification": "-", "Official Symbol Interactor A": "EAF1", "Official Symbol Interactor B": "RPO21", "Organism Interactor A": 559292, "Organism Interactor B": 559292, "Phenotypes": "-", "Pubmed ID": 27535225, "Qualifications": "Figure 3", "Score": "-", "Source Database": "BIOGRID", "Synonyms Interactor A": "VID21", "Synonyms Interactor B": "RPB1|RPB220|SUA8|DNA-directed RNA polymerase II core subunit RPO21|B220|L000001744", "Tags": "-", "Throughput": "Low Throughput", "from": "YDR359C", "to": "YDL140C", "width": 1}, {"#BioGRID Interaction ID": 591002, "Author": "Chittuluru JR (2011)", "BioGRID ID Interactor A": 32415, "BioGRID ID Interactor B": 33246, "Entrez Gene Interactor A": "851962", "Entrez Gene Interactor B": "852885", "Experimental System": "Co-crystal Structure", "Experimental System Type": "physical", "Modification": "-", "Official Symbol Interactor A": "EAF1", "Official Symbol Interactor B": "SWC4", "Organism Interactor A": 559292, "Organism Interactor B": 559292, "Phenotypes": "-", "Pubmed ID": 21984211, "Qualifications": "cryo-EM structure of NuA4 minus Piccolo, using Epl1 (1-485) C-terminal truncation", "Score": "-", "Source Database": "BIOGRID", "Synonyms Interactor A": "VID21", "Synonyms Interactor B": "EAF2|GOD1", "Tags": "-", "Throughput": "Low Throughput", "from": "YDR359C", "to": "YGR002C", "width": 1}, {"#BioGRID Interaction ID": 265481, "Author": "Mitchell L (2008)", "BioGRID ID Interactor A": 32415, "BioGRID ID Interactor B": 36525, "Entrez Gene Interactor A": "851962", "Entrez Gene Interactor B": "856490", "Experimental System": "Affinity Capture-MS", "Experimental System Type": "physical", "Modification": "-", "Official Symbol Interactor A": "EAF1", "Official Symbol Interactor B": "YNG2", "Organism Interactor A": 559292, "Organism Interactor B": 559292, "Phenotypes": "-", "Pubmed ID": 18212056, "Qualifications": "-", "Score": "-", "Source Database": "BIOGRID", "Synonyms Interactor A": "VID21", "Synonyms Interactor B": "EAF4|NBN1|histone acetyltransferase YNG2|L000004452", "Tags": "-", "Throughput": "Low Throughput", "from": "YDR359C", "to": "YHR090C", "width": 1}, {"#BioGRID Interaction ID": 591005, "Author": "Chittuluru JR (2011)", "BioGRID ID Interactor A": 32415, "BioGRID ID Interactor B": 35717, "Entrez Gene Interactor A": "851962", "Entrez Gene Interactor B": "855616", "Experimental System": "Co-crystal Structure", "Experimental System Type": "physical", "Modification": "-", "Official Symbol Interactor A": "EAF1", "Official Symbol Interactor B": "YAF9", "Organism Interactor A": 559292, "Organism Interactor B": 559292, "Phenotypes": "-", "Pubmed ID": 21984211, "Qualifications": "cryo-EM structure of NuA4 minus Piccolo, using Epl1 (1-485) C-terminal truncation", "Score": "-", "Source Database": "BIOGRID", "Synonyms Interactor A": "VID21", "Synonyms Interactor B": "S000007495", "Tags": "-", "Throughput": "Low Throughput", "from": "YDR359C", "to": "YNL107W", "width": 1}, {"#BioGRID Interaction ID": 2397167, "Author": "Rossetto D (2014)", "BioGRID ID Interactor A": 35690, "BioGRID ID Interactor B": 32415, "Entrez Gene Interactor A": "855586", "Entrez Gene Interactor B": "851962", "Experimental System": "Affinity Capture-Western", "Experimental System Type": "physical", "Modification": "-", "Official Symbol Interactor A": "EAF7", "Official Symbol Interactor B": "EAF1", "Organism Interactor A": 559292, "Organism Interactor B": 559292, "Phenotypes": "-", "Pubmed ID": 24843044, "Qualifications": "-", "Score": "-", "Source Database": "BIOGRID", "Synonyms Interactor A": "-", "Synonyms Interactor B": "VID21", "Tags": "-", "Throughput": "Low Throughput", "from": "YDR359C", "to": "YNL136W", "width": 1}, {"#BioGRID Interaction ID": 2396546, "Author": "Ginsburg DS (2014)", "BioGRID ID Interactor A": 32711, "BioGRID ID Interactor B": 32415, "Entrez Gene Interactor A": "852295", "Entrez Gene Interactor B": "851962", "Experimental System": "Affinity Capture-Western", "Experimental System Type": "physical", "Modification": "-", "Official Symbol Interactor A": "HHT1", "Official Symbol Interactor B": "EAF1", "Organism Interactor A": 559292, "Organism Interactor B": 559292, "Phenotypes": "-", "Pubmed ID": 25301943, "Qualifications": "-", "Score": "-", "Source Database": "BIOGRID", "Synonyms Interactor A": "BUR5|SIN2|histone H3|L000000772", "Synonyms Interactor B": "VID21", "Tags": "-", "Throughput": "Low Throughput", "from": "YDR359C", "to": "YBR010W", "width": 1}, {"#BioGRID Interaction ID": 2349285, "Author": "Miller JE (2017)", "BioGRID ID Interactor A": 31903, "BioGRID ID Interactor B": 32415, "Entrez Gene Interactor A": "851394", "Entrez Gene Interactor B": "851962", "Experimental System": "Affinity Capture-RNA", "Experimental System Type": "physical", "Modification": "-", "Official Symbol Interactor A": "DHH1", "Official Symbol Interactor B": "EAF1", "Organism Interactor A": 559292, "Organism Interactor B": 559292, "Phenotypes": "-", "Pubmed ID": 29158339, "Qualifications": "-", "Score": "-", "Source Database": "BIOGRID", "Synonyms Interactor A": "DExD/H-box ATP-dependent RNA helicase DHH1|L000000504", "Synonyms Interactor B": "VID21", "Tags": "-", "Throughput": "High Throughput", "from": "YDR359C", "to": "YDL160C", "width": 1}, {"#BioGRID Interaction ID": 2389509, "Author": "Jungfleisch J (2017)", "BioGRID ID Interactor A": 31903, "BioGRID ID Interactor B": 31921, "Entrez Gene Interactor A": "851394", "Entrez Gene Interactor B": "851415", "Experimental System": "Affinity Capture-RNA", "Experimental System Type": "physical", "Modification": "-", "Official Symbol Interactor A": "DHH1", "Official Symbol Interactor B": "RPO21", "Organism Interactor A": 559292, "Organism Interactor B": 559292, "Phenotypes": "-", "Pubmed ID": 27821408, "Qualifications": "CRAC", "Score": "-", "Source Database": "BIOGRID", "Synonyms Interactor A": "DExD/H-box ATP-dependent RNA helicase DHH1|L000000504", "Synonyms Interactor B": "RPB1|RPB220|SUA8|DNA-directed RNA polymerase II core subunit RPO21|B220|L000001744", "Tags": "-", "Throughput": "High Throughput", "from": "YDL160C", "to": "YDL140C", "width": 1}, {"#BioGRID Interaction ID": 2390626, "Author": "Jungfleisch J (2017)", "BioGRID ID Interactor A": 31903, "BioGRID ID Interactor B": 35159, "Entrez Gene Interactor A": "851394", "Entrez Gene Interactor B": "854999", "Experimental System": "Affinity Capture-RNA", "Experimental System Type": "physical", "Modification": "-", "Official Symbol Interactor A": "DHH1", "Official Symbol Interactor B": "SPT5", "Organism Interactor A": 559292, "Organism Interactor B": 559292, "Phenotypes": "-", "Pubmed ID": 27821408, "Qualifications": "CRAC", "Score": "-", "Source Database": "BIOGRID", "Synonyms Interactor A": "DExD/H-box ATP-dependent RNA helicase DHH1|L000000504", "Synonyms Interactor B": "transcription elongation factor SPT5|L000002031", "Tags": "-", "Throughput": "High Throughput", "from": "YDL160C", "to": "YML010W", "width": 1}, {"#BioGRID Interaction ID": 2453116, "Author": "Lapointe CP (2017)", "BioGRID ID Interactor A": 33076, "BioGRID ID Interactor B": 31903, "Entrez Gene Interactor A": "852697", "Entrez Gene Interactor B": "851394", "Experimental System": "Affinity Capture-RNA", "Experimental System Type": "physical", "Modification": "-", "Official Symbol Interactor A": "MPT5", "Official Symbol Interactor B": "DHH1", "Organism Interactor A": 559292, "Organism Interactor B": 559292, "Phenotypes": "-", "Pubmed ID": 28768715, "Qualifications": "-", "Score": "-", "Source Database": "BIOGRID", "Synonyms Interactor A": "HTR1|PUF5|UTH4|L000001146", "Synonyms Interactor B": "DExD/H-box ATP-dependent RNA helicase DHH1|L000000504", "Tags": "-", "Throughput": "High Throughput", "from": "YDL160C", "to": "YGL178W", "width": 1}, {"#BioGRID Interaction ID": 2389779, "Author": "Jungfleisch J (2017)", "BioGRID ID Interactor A": 31903, "BioGRID ID Interactor B": 32711, "Entrez Gene Interactor A": "851394", "Entrez Gene Interactor B": "852295", "Experimental System": "Affinity Capture-RNA", "Experimental System Type": "physical", "Modification": "-", "Official Symbol Interactor A": "DHH1", "Official Symbol Interactor B": "HHT1", "Organism Interactor A": 559292, "Organism Interactor B": 559292, "Phenotypes": "-", "Pubmed ID": 27821408, "Qualifications": "CRAC", "Score": "-", "Source Database": "BIOGRID", "Synonyms Interactor A": "DExD/H-box ATP-dependent RNA helicase DHH1|L000000504", "Synonyms Interactor B": "BUR5|SIN2|histone H3|L000000772", "Tags": "-", "Throughput": "High Throughput", "from": "YDL160C", "to": "YBR010W", "width": 1}, {"#BioGRID Interaction ID": 2389434, "Author": "Jungfleisch J (2017)", "BioGRID ID Interactor A": 31903, "BioGRID ID Interactor B": 31655, "Entrez Gene Interactor A": "851394", "Entrez Gene Interactor B": "851112", "Experimental System": "Affinity Capture-RNA", "Experimental System Type": "physical", "Modification": "-", "Official Symbol Interactor A": "DHH1", "Official Symbol Interactor B": "VPS33", "Organism Interactor A": 559292, "Organism Interactor B": 559292, "Phenotypes": "-", "Pubmed ID": 27821408, "Qualifications": "CRAC", "Score": "-", "Source Database": "BIOGRID", "Synonyms Interactor A": "DExD/H-box ATP-dependent RNA helicase DHH1|L000000504", "Synonyms Interactor B": "CLS14|MET27|PEP14|SLP1|VAM5|VPL25|VPT33|tethering complex ATP-binding subunit VPS33|L000002475", "Tags": "-", "Throughput": "High Throughput", "from": "YDL160C", "to": "YLR396C", "width": 1}, {"#BioGRID Interaction ID": 2202803, "Author": "McCann TS (2016)", "BioGRID ID Interactor A": 31921, "BioGRID ID Interactor B": 36359, "Entrez Gene Interactor A": "851415", "Entrez Gene Interactor B": "856317", "Experimental System": "Affinity Capture-MS", "Experimental System Type": "physical", "Modification": "-", "Official Symbol Interactor A": "RPO21", "Official Symbol Interactor B": "RPO26", "Organism Interactor A": 559292, "Organism Interactor B": 559292, "Phenotypes": "-", "Pubmed ID": 26787877, "Qualifications": "Table 1", "Score": "-", "Source Database": "BIOGRID", "Synonyms Interactor A": "RPB1|RPB220|SUA8|DNA-directed RNA polymerase II core subunit RPO21|B220|L000001744", "Synonyms Interactor B": "RPB6|DNA-directed RNA polymerase core subunit RPB6|ABC23|L000001745", "Tags": "-", "Throughput": "Low Throughput", "from": "YPR187W", "to": "YDL140C", "width": 1}, {"#BioGRID Interaction ID": 2391350, "Author": "Martinez-Fernandez V (2018)", "BioGRID ID Interactor A": 34967, "BioGRID ID Interactor B": 36359, "Entrez Gene Interactor A": "854791", "Entrez Gene Interactor B": "856317", "Experimental System": "Affinity Capture-Western", "Experimental System Type": "physical", "Modification": "-", "Official Symbol Interactor A": "RPB3", "Official Symbol Interactor B": "RPO26", "Organism Interactor A": 559292, "Organism Interactor B": 559292, "Phenotypes": "-", "Pubmed ID": 29133017, "Qualifications": "-", "Score": "-", "Source Database": "BIOGRID", "Synonyms Interactor A": "DNA-directed RNA polymerase II core subunit RPB3|B44|L000001677|L000001589", "Synonyms Interactor B": "RPB6|DNA-directed RNA polymerase core subunit RPB6|ABC23|L000001745", "Tags": "-", "Throughput": "Low Throughput", "from": "YPR187W", "to": "YIL021W", "width": 1}, {"#BioGRID Interaction ID": 188853, "Author": "Gavin AC (2006)", "BioGRID ID Interactor A": 35159, "BioGRID ID Interactor B": 36359, "Entrez Gene Interactor A": "854999", "Entrez Gene Interactor B": "856317", "Experimental System": "Affinity Capture-MS", "Experimental System Type": "physical", "Modification": "-", "Official Symbol Interactor A": "SPT5", "Official Symbol Interactor B": "RPO26", "Organism Interactor A": 559292, "Organism Interactor B": 559292, "Phenotypes": "-", "Pubmed ID": 16429126, "Qualifications": "-", "Score": "-", "Source Database": "BIOGRID", "Synonyms Interactor A": "transcription elongation factor SPT5|L000002031", "Synonyms Interactor B": "RPB6|DNA-directed RNA polymerase core subunit RPB6|ABC23|L000001745", "Tags": "-", "Throughput": "High Throughput", "from": "YPR187W", "to": "YML010W", "width": 1}, {"#BioGRID Interaction ID": 274532, "Author": "Tarassov K (2008)", "BioGRID ID Interactor A": 34547, "BioGRID ID Interactor B": 36359, "Entrez Gene Interactor A": "854322", "Entrez Gene Interactor B": "856317", "Experimental System": "PCA", "Experimental System Type": "physical", "Modification": "-", "Official Symbol Interactor A": "RPB2", "Official Symbol Interactor B": "RPO26", "Organism Interactor A": 559292, "Organism Interactor B": 559292, "Phenotypes": "-", "Pubmed ID": 18467557, "Qualifications": "-", "Score": "-", "Source Database": "BIOGRID", "Synonyms Interactor A": "RPB150|RPO22|SIT2|SOH2|DNA-directed RNA polymerase II core subunit RPB2|B150|L000001588|L000001676", "Synonyms Interactor B": "RPB6|DNA-directed RNA polymerase core subunit RPB6|ABC23|L000001745", "Tags": "-", "Throughput": "High Throughput", "from": "YPR187W", "to": "YOR151C", "width": 1}, {"#BioGRID Interaction ID": 180735, "Author": "Krogan NJ (2006)", "BioGRID ID Interactor A": 32853, "BioGRID ID Interactor B": 36359, "Entrez Gene Interactor A": "852451", "Entrez Gene Interactor B": "856317", "Experimental System": "Affinity Capture-MS", "Experimental System Type": "physical", "Modification": "-", "Official Symbol Interactor A": "RPB5", "Official Symbol Interactor B": "RPO26", "Organism Interactor A": 559292, "Organism Interactor B": 559292, "Phenotypes": "-", "Pubmed ID": 16554755, "Qualifications": "-", "Score": "-", "Source Database": "BIOGRID", "Synonyms Interactor A": "DNA-directed RNA polymerase core subunit RPB5|ABC27|L000001590|L000001679", "Synonyms Interactor B": "RPB6|DNA-directed RNA polymerase core subunit RPB6|ABC23|L000001745", "Tags": "-", "Throughput": "High Throughput", "from": "YPR187W", "to": "YBR154C", "width": 1}, {"#BioGRID Interaction ID": 440481, "Author": "Breitkreutz A (2010)", "BioGRID ID Interactor A": 36869, "BioGRID ID Interactor B": 36359, "Entrez Gene Interactor A": "856862", "Entrez Gene Interactor B": "856317", "Experimental System": "Affinity Capture-MS", "Experimental System Type": "physical", "Modification": "-", "Official Symbol Interactor A": "RSP5", "Official Symbol Interactor B": "RPO26", "Organism Interactor A": 559292, "Organism Interactor B": 559292, "Phenotypes": "-", "Pubmed ID": 20489023, "Qualifications": "-", "Score": "0.925", "Source Database": "BIOGRID", "Synonyms Interactor A": "MDP1|MUT2|NPI1|SMM1|UBY1|NEDD4 family E3 ubiquitin-protein ligase|L000001054|L000001779|L000001220", "Synonyms Interactor B": "RPB6|DNA-directed RNA polymerase core subunit RPB6|ABC23|L000001745", "Tags": "-", "Throughput": "High Throughput", "from": "YPR187W", "to": "YER125W", "width": 1}, {"#BioGRID Interaction ID": 823194, "Author": "Mosley AL (2013)", "BioGRID ID Interactor A": 33308, "BioGRID ID Interactor B": 36359, "Entrez Gene Interactor A": "852955", "Entrez Gene Interactor B": "856317", "Experimental System": "Affinity Capture-MS", "Experimental System Type": "physical", "Modification": "-", "Official Symbol Interactor A": "SPT4", "Official Symbol Interactor B": "RPO26", "Organism Interactor A": 559292, "Organism Interactor B": 559292, "Phenotypes": "-", "Pubmed ID": 23418395, "Qualifications": "-", "Score": "-", "Source Database": "BIOGRID", "Synonyms Interactor A": "transcription elongation factor SPT4|L000002030", "Synonyms Interactor B": "RPB6|DNA-directed RNA polymerase core subunit RPB6|ABC23|L000001745", "Tags": "-", "Throughput": "Low Throughput", "from": "YPR187W", "to": "YGR063C", "width": 1}, {"#BioGRID Interaction ID": 927844, "Author": "Duan R (2013)", "BioGRID ID Interactor A": 32464, "BioGRID ID Interactor B": 36359, "Entrez Gene Interactor A": "852013", "Entrez Gene Interactor B": "856317", "Experimental System": "Affinity Capture-MS", "Experimental System Type": "physical", "Modification": "-", "Official Symbol Interactor A": "RPB7", "Official Symbol Interactor B": "RPO26", "Organism Interactor A": 559292, "Organism Interactor B": 559292, "Phenotypes": "-", "Pubmed ID": 24513203, "Qualifications": "-", "Score": "-", "Source Database": "BIOGRID", "Synonyms Interactor A": "DNA-directed RNA polymerase II subunit RPB7|B16|L000001681", "Synonyms Interactor B": "RPB6|DNA-directed RNA polymerase core subunit RPB6|ABC23|L000001745", "Tags": "-", "Throughput": "Low Throughput", "from": "YPR187W", "to": "YDR404C", "width": 1}, {"#BioGRID Interaction ID": 1518898, "Author": "Behrmann H (2014)", "BioGRID ID Interactor A": 31417, "BioGRID ID Interactor B": 35409, "Entrez Gene Interactor A": "850840", "Entrez Gene Interactor B": "855271", "Experimental System": "Co-purification", "Experimental System Type": "physical", "Modification": "-", "Official Symbol Interactor A": "PEP3", "Official Symbol Interactor B": "PEP5", "Organism Interactor A": 559292, "Organism Interactor B": 559292, "Phenotypes": "-", "Pubmed ID": 25324549, "Qualifications": "-", "Score": "-", "Source Database": "BIOGRID", "Synonyms Interactor A": "VAM8|VPS18|VPT18|tethering complex subunit PEP3|L000001374|L000002473", "Synonyms Interactor B": "END1|VAM1|VPL9|VPS11|VPT11|tethering complex subunit PEP5|L000001376|L000002957", "Tags": "-", "Throughput": "Low Throughput", "from": "YMR231W", "to": "YLR148W", "width": 1}, {"#BioGRID Interaction ID": 2513086, "Author": "Karim MA (2018)", "BioGRID ID Interactor A": 32136, "BioGRID ID Interactor B": 35409, "Entrez Gene Interactor A": "851653", "Entrez Gene Interactor B": "855271", "Experimental System": "Affinity Capture-Western", "Experimental System Type": "physical", "Modification": "-", "Official Symbol Interactor A": "VPS41", "Official Symbol Interactor B": "PEP5", "Organism Interactor A": 559292, "Organism Interactor B": 559292, "Phenotypes": "-", "Pubmed ID": 30269949, "Qualifications": "-", "Score": "-", "Source Database": "BIOGRID", "Synonyms Interactor A": "CVT8|FET2|SVL2|VAM2|VPL20|L000003512|L000004234", "Synonyms Interactor B": "END1|VAM1|VPL9|VPS11|VPT11|tethering complex subunit PEP5|L000001376|L000002957", "Tags": "-", "Throughput": "Low Throughput", "from": "YMR231W", "to": "YDR080W", "width": 1}, {"#BioGRID Interaction ID": 519308, "Author": "Ostrowicz CW (2010)", "BioGRID ID Interactor A": 35409, "BioGRID ID Interactor B": 36135, "Entrez Gene Interactor A": "855271", "Entrez Gene Interactor B": "856062", "Experimental System": "Affinity Capture-Western", "Experimental System Type": "physical", "Modification": "-", "Official Symbol Interactor A": "PEP5", "Official Symbol Interactor B": "VPS16", "Organism Interactor A": 559292, "Organism Interactor B": 559292, "Phenotypes": "-", "Pubmed ID": 20604902, "Qualifications": "-", "Score": "-", "Source Database": "BIOGRID", "Synonyms Interactor A": "END1|VAM1|VPL9|VPS11|VPT11|tethering complex subunit PEP5|L000001376|L000002957", "Synonyms Interactor B": "CVT15|SVL6|VAM9|VPT16|tethering complex subunit VPS16|L000002471|L000003119|L000004766|S000029128", "Tags": "-", "Throughput": "Low Throughput", "from": "YMR231W", "to": "YPL045W", "width": 1}, {"#BioGRID Interaction ID": 694662, "Author": "Babu M (2012)", "BioGRID ID Interactor A": 31655, "BioGRID ID Interactor B": 35409, "Entrez Gene Interactor A": "851112", "Entrez Gene Interactor B": "855271", "Experimental System": "Affinity Capture-MS", "Experimental System Type": "physical", "Modification": "-", "Official Symbol Interactor A": "VPS33", "Official Symbol Interactor B": "PEP5", "Organism Interactor A": 559292, "Organism Interactor B": 559292, "Phenotypes": "-", "Pubmed ID": 22940862, "Qualifications": "Purification data downloaded from http://wodaklab.org/membrane_web/downloads/Purifications.zip, filtered for LCMS/MS confidence \u003e 90% and MALDI-TOF Z-score \u003e 1.", "Score": "-", "Source Database": "BIOGRID", "Synonyms Interactor A": "CLS14|MET27|PEP14|SLP1|VAM5|VPL25|VPT33|tethering complex ATP-binding subunit VPS33|L000002475", "Synonyms Interactor B": "END1|VAM1|VPL9|VPS11|VPT11|tethering complex subunit PEP5|L000001376|L000002957", "Tags": "-", "Throughput": "High Throughput", "from": "YMR231W", "to": "YLR396C", "width": 1}, {"#BioGRID Interaction ID": 946666, "Author": "Li W (2014)", "BioGRID ID Interactor A": 31921, "BioGRID ID Interactor B": 35159, "Entrez Gene Interactor A": "851415", "Entrez Gene Interactor B": "854999", "Experimental System": "Affinity Capture-Western", "Experimental System Type": "physical", "Modification": "-", "Official Symbol Interactor A": "RPO21", "Official Symbol Interactor B": "SPT5", "Organism Interactor A": 559292, "Organism Interactor B": 559292, "Phenotypes": "-", "Pubmed ID": 24813444, "Qualifications": "-", "Score": "-", "Source Database": "BIOGRID", "Synonyms Interactor A": "RPB1|RPB220|SUA8|DNA-directed RNA polymerase II core subunit RPO21|B220|L000001744", "Synonyms Interactor B": "transcription elongation factor SPT5|L000002031", "Tags": "-", "Throughput": "Low Throughput", "from": "YML010W", "to": "YDL140C", "width": 1}, {"#BioGRID Interaction ID": 2391351, "Author": "Martinez-Fernandez V (2018)", "BioGRID ID Interactor A": 34967, "BioGRID ID Interactor B": 35159, "Entrez Gene Interactor A": "854791", "Entrez Gene Interactor B": "854999", "Experimental System": "Affinity Capture-Western", "Experimental System Type": "physical", "Modification": "-", "Official Symbol Interactor A": "RPB3", "Official Symbol Interactor B": "SPT5", "Organism Interactor A": 559292, "Organism Interactor B": 559292, "Phenotypes": "-", "Pubmed ID": 29133017, "Qualifications": "-", "Score": "-", "Source Database": "BIOGRID", "Synonyms Interactor A": "DNA-directed RNA polymerase II core subunit RPB3|B44|L000001677|L000001589", "Synonyms Interactor B": "transcription elongation factor SPT5|L000002031", "Tags": "-", "Throughput": "Low Throughput", "from": "YML010W", "to": "YIL021W", "width": 1}, {"#BioGRID Interaction ID": 946665, "Author": "Li W (2014)", "BioGRID ID Interactor A": 35159, "BioGRID ID Interactor B": 32464, "Entrez Gene Interactor A": "854999", "Entrez Gene Interactor B": "852013", "Experimental System": "Affinity Capture-Western", "Experimental System Type": "physical", "Modification": "-", "Official Symbol Interactor A": "SPT5", "Official Symbol Interactor B": "RPB7", "Organism Interactor A": 559292, "Organism Interactor B": 559292, "Phenotypes": "-", "Pubmed ID": 24813444, "Qualifications": "Bpa (p-benzoyl-L-phenylalanine) used for in vivo site-specific cross-linking", "Score": "-", "Source Database": "BIOGRID", "Synonyms Interactor A": "transcription elongation factor SPT5|L000002031", "Synonyms Interactor B": "DNA-directed RNA polymerase II subunit RPB7|B16|L000001681", "Tags": "-", "Throughput": "Low Throughput", "from": "YML010W", "to": "YDR404C", "width": 1}, {"#BioGRID Interaction ID": 2386640, "Author": "Silva A (2017)", "BioGRID ID Interactor A": 33308, "BioGRID ID Interactor B": 35159, "Entrez Gene Interactor A": "852955", "Entrez Gene Interactor B": "854999", "Experimental System": "Affinity Capture-Western", "Experimental System Type": "physical", "Modification": "-", "Official Symbol Interactor A": "SPT4", "Official Symbol Interactor B": "SPT5", "Organism Interactor A": 559292, "Organism Interactor B": 559292, "Phenotypes": "-", "Pubmed ID": 29155810, "Qualifications": "-", "Score": "-", "Source Database": "BIOGRID", "Synonyms Interactor A": "transcription elongation factor SPT4|L000002030", "Synonyms Interactor B": "transcription elongation factor SPT5|L000002031", "Tags": "-", "Throughput": "Low Throughput", "from": "YML010W", "to": "YGR063C", "width": 1}, {"#BioGRID Interaction ID": 946662, "Author": "Li W (2014)", "BioGRID ID Interactor A": 35159, "BioGRID ID Interactor B": 34547, "Entrez Gene Interactor A": "854999", "Entrez Gene Interactor B": "854322", "Experimental System": "Affinity Capture-Western", "Experimental System Type": "physical", "Modification": "-", "Official Symbol Interactor A": "SPT5", "Official Symbol Interactor B": "RPB2", "Organism Interactor A": 559292, "Organism Interactor B": 559292, "Phenotypes": "-", "Pubmed ID": 24813444, "Qualifications": "Bpa (p-benzoyl-L-phenylalanine) used for in vivo site-specific cross-linking", "Score": "-", "Source Database": "BIOGRID", "Synonyms Interactor A": "transcription elongation factor SPT5|L000002031", "Synonyms Interactor B": "RPB150|RPO22|SIT2|SOH2|DNA-directed RNA polymerase II core subunit RPB2|B150|L000001588|L000001676", "Tags": "-", "Throughput": "Low Throughput", "from": "YML010W", "to": "YOR151C", "width": 1}, {"#BioGRID Interaction ID": 188851, "Author": "Gavin AC (2006)", "BioGRID ID Interactor A": 35159, "BioGRID ID Interactor B": 32853, "Entrez Gene Interactor A": "854999", "Entrez Gene Interactor B": "852451", "Experimental System": "Affinity Capture-MS", "Experimental System Type": "physical", "Modification": "-", "Official Symbol Interactor A": "SPT5", "Official Symbol Interactor B": "RPB5", "Organism Interactor A": 559292, "Organism Interactor B": 559292, "Phenotypes": "-", "Pubmed ID": 16429126, "Qualifications": "-", "Score": "-", "Source Database": "BIOGRID", "Synonyms Interactor A": "transcription elongation factor SPT5|L000002031", "Synonyms Interactor B": "DNA-directed RNA polymerase core subunit RPB5|ABC27|L000001590|L000001679", "Tags": "-", "Throughput": "High Throughput", "from": "YML010W", "to": "YBR154C", "width": 1}, {"#BioGRID Interaction ID": 516694, "Author": "Krogan NJ (2003)", "BioGRID ID Interactor A": 31755, "BioGRID ID Interactor B": 33246, "Entrez Gene Interactor A": "851222", "Entrez Gene Interactor B": "852885", "Experimental System": "Affinity Capture-MS", "Experimental System Type": "physical", "Modification": "-", "Official Symbol Interactor A": "SWC3", "Official Symbol Interactor B": "SWC4", "Organism Interactor A": 559292, "Organism Interactor B": 559292, "Phenotypes": "-", "Pubmed ID": 14690608, "Qualifications": "-", "Score": "-", "Source Database": "BIOGRID", "Synonyms Interactor A": "SWC1", "Synonyms Interactor B": "EAF2|GOD1", "Tags": "-", "Throughput": "High Throughput", "from": "YAL011W", "to": "YGR002C", "width": 1}, {"#BioGRID Interaction ID": 516700, "Author": "Krogan NJ (2003)", "BioGRID ID Interactor A": 31755, "BioGRID ID Interactor B": 35717, "Entrez Gene Interactor A": "851222", "Entrez Gene Interactor B": "855616", "Experimental System": "Affinity Capture-MS", "Experimental System Type": "physical", "Modification": "-", "Official Symbol Interactor A": "SWC3", "Official Symbol Interactor B": "YAF9", "Organism Interactor A": 559292, "Organism Interactor B": 559292, "Phenotypes": "-", "Pubmed ID": 14690608, "Qualifications": "-", "Score": "-", "Source Database": "BIOGRID", "Synonyms Interactor A": "SWC1", "Synonyms Interactor B": "S000007495", "Tags": "-", "Throughput": "High Throughput", "from": "YAL011W", "to": "YNL107W", "width": 1}, {"#BioGRID Interaction ID": 2406172, "Author": "Lin CL (2017)", "BioGRID ID Interactor A": 32391, "BioGRID ID Interactor B": 31755, "Entrez Gene Interactor A": "851934", "Entrez Gene Interactor B": "851222", "Experimental System": "Reconstituted Complex", "Experimental System Type": "physical", "Modification": "-", "Official Symbol Interactor A": "SWR1", "Official Symbol Interactor B": "SWC3", "Organism Interactor A": 559292, "Organism Interactor B": 559292, "Phenotypes": "-", "Pubmed ID": 28499038, "Qualifications": "-", "Score": "-", "Source Database": "BIOGRID", "Synonyms Interactor A": "chromatin-remodeling protein SWR1|S000007447", "Synonyms Interactor B": "SWC1", "Tags": "-", "Throughput": "Low Throughput", "from": "YAL011W", "to": "YDR334W", "width": 1}, {"#BioGRID Interaction ID": 2200995, "Author": "Garcia-Oliver E (2017)", "BioGRID ID Interactor A": 31658, "BioGRID ID Interactor B": 31755, "Entrez Gene Interactor A": "851115", "Entrez Gene Interactor B": "851222", "Experimental System": "Affinity Capture-MS", "Experimental System Type": "physical", "Modification": "-", "Official Symbol Interactor A": "BDF1", "Official Symbol Interactor B": "SWC3", "Organism Interactor A": 559292, "Organism Interactor B": 559292, "Phenotypes": "-", "Pubmed ID": 28068333, "Qualifications": "Figure 5", "Score": "-", "Source Database": "BIOGRID", "Synonyms Interactor A": "chromatin-binding protein BDF1|L000000165", "Synonyms Interactor B": "SWC1", "Tags": "-", "Throughput": "Low Throughput", "from": "YAL011W", "to": "YLR399C", "width": 1}, {"#BioGRID Interaction ID": 2453183, "Author": "Lapointe CP (2017)", "BioGRID ID Interactor A": 33076, "BioGRID ID Interactor B": 31755, "Entrez Gene Interactor A": "852697", "Entrez Gene Interactor B": "851222", "Experimental System": "Affinity Capture-RNA", "Experimental System Type": "physical", "Modification": "-", "Official Symbol Interactor A": "MPT5", "Official Symbol Interactor B": "SWC3", "Organism Interactor A": 559292, "Organism Interactor B": 559292, "Phenotypes": "-", "Pubmed ID": 28768715, "Qualifications": "-", "Score": "-", "Source Database": "BIOGRID", "Synonyms Interactor A": "HTR1|PUF5|UTH4|L000001146", "Synonyms Interactor B": "SWC1", "Tags": "-", "Throughput": "High Throughput", "from": "YAL011W", "to": "YGL178W", "width": 1}, {"#BioGRID Interaction ID": 264918, "Author": "Auger A (2008)", "BioGRID ID Interactor A": 33246, "BioGRID ID Interactor B": 36525, "Entrez Gene Interactor A": "852885", "Entrez Gene Interactor B": "856490", "Experimental System": "Affinity Capture-Western", "Experimental System Type": "physical", "Modification": "-", "Official Symbol Interactor A": "SWC4", "Official Symbol Interactor B": "YNG2", "Organism Interactor A": 559292, "Organism Interactor B": 559292, "Phenotypes": "-", "Pubmed ID": 18212047, "Qualifications": "Verified by IP/Western", "Score": "-", "Source Database": "BIOGRID", "Synonyms Interactor A": "EAF2|GOD1", "Synonyms Interactor B": "EAF4|NBN1|histone acetyltransferase YNG2|L000004452", "Tags": "-", "Throughput": "Low Throughput", "from": "YHR090C", "to": "YGR002C", "width": 1}, {"#BioGRID Interaction ID": 264912, "Author": "Auger A (2008)", "BioGRID ID Interactor A": 35717, "BioGRID ID Interactor B": 36525, "Entrez Gene Interactor A": "855616", "Entrez Gene Interactor B": "856490", "Experimental System": "Affinity Capture-Western", "Experimental System Type": "physical", "Modification": "-", "Official Symbol Interactor A": "YAF9", "Official Symbol Interactor B": "YNG2", "Organism Interactor A": 559292, "Organism Interactor B": 559292, "Phenotypes": "-", "Pubmed ID": 18212047, "Qualifications": "Verified by IP/Western", "Score": "-", "Source Database": "BIOGRID", "Synonyms Interactor A": "S000007495", "Synonyms Interactor B": "EAF4|NBN1|histone acetyltransferase YNG2|L000004452", "Tags": "-", "Throughput": "Low Throughput", "from": "YHR090C", "to": "YNL107W", "width": 1}, {"#BioGRID Interaction ID": 2397171, "Author": "Rossetto D (2014)", "BioGRID ID Interactor A": 35690, "BioGRID ID Interactor B": 36525, "Entrez Gene Interactor A": "855586", "Entrez Gene Interactor B": "856490", "Experimental System": "Affinity Capture-Western", "Experimental System Type": "physical", "Modification": "-", "Official Symbol Interactor A": "EAF7", "Official Symbol Interactor B": "YNG2", "Organism Interactor A": 559292, "Organism Interactor B": 559292, "Phenotypes": "-", "Pubmed ID": 24843044, "Qualifications": "-", "Score": "-", "Source Database": "BIOGRID", "Synonyms Interactor A": "-", "Synonyms Interactor B": "EAF4|NBN1|histone acetyltransferase YNG2|L000004452", "Tags": "-", "Throughput": "Low Throughput", "from": "YHR090C", "to": "YNL136W", "width": 1}, {"#BioGRID Interaction ID": 2344897, "Author": "Steunou AL (2016)", "BioGRID ID Interactor A": 32711, "BioGRID ID Interactor B": 36525, "Entrez Gene Interactor A": "852295", "Entrez Gene Interactor B": "856490", "Experimental System": "Protein-peptide", "Experimental System Type": "physical", "Modification": "-", "Official Symbol Interactor A": "HHT1", "Official Symbol Interactor B": "YNG2", "Organism Interactor A": 559292, "Organism Interactor B": 559292, "Phenotypes": "-", "Pubmed ID": 27550811, "Qualifications": "-", "Score": "-", "Source Database": "BIOGRID", "Synonyms Interactor A": "BUR5|SIN2|histone H3|L000000772", "Synonyms Interactor B": "EAF4|NBN1|histone acetyltransferase YNG2|L000004452", "Tags": "-", "Throughput": "Low Throughput", "from": "YHR090C", "to": "YBR010W", "width": 1}, {"#BioGRID Interaction ID": 1516759, "Author": "O\u0027Connor HF (2015)", "BioGRID ID Interactor A": 36869, "BioGRID ID Interactor B": 31921, "Entrez Gene Interactor A": "856862", "Entrez Gene Interactor B": "851415", "Experimental System": "Affinity Capture-MS", "Experimental System Type": "physical", "Modification": "-", "Official Symbol Interactor A": "RSP5", "Official Symbol Interactor B": "RPO21", "Organism Interactor A": 559292, "Organism Interactor B": 559292, "Phenotypes": "-", "Pubmed ID": 26508657, "Qualifications": "Potential non-covalent interactors|The UBAITs (Ubiquitin-Activated Interaction Traps) method was used.", "Score": "-", "Source Database": "BIOGRID", "Synonyms Interactor A": "MDP1|MUT2|NPI1|SMM1|UBY1|NEDD4 family E3 ubiquitin-protein ligase|L000001054|L000001779|L000001220", "Synonyms Interactor B": "RPB1|RPB220|SUA8|DNA-directed RNA polymerase II core subunit RPO21|B220|L000001744", "Tags": "-", "Throughput": "Low Throughput", "from": "YER125W", "to": "YDL140C", "width": 1}, {"#BioGRID Interaction ID": 440474, "Author": "Breitkreutz A (2010)", "BioGRID ID Interactor A": 36869, "BioGRID ID Interactor B": 34967, "Entrez Gene Interactor A": "856862", "Entrez Gene Interactor B": "854791", "Experimental System": "Affinity Capture-MS", "Experimental System Type": "physical", "Modification": "-", "Official Symbol Interactor A": "RSP5", "Official Symbol Interactor B": "RPB3", "Organism Interactor A": 559292, "Organism Interactor B": 559292, "Phenotypes": "-", "Pubmed ID": 20489023, "Qualifications": "-", "Score": "1.0", "Source Database": "BIOGRID", "Synonyms Interactor A": "MDP1|MUT2|NPI1|SMM1|UBY1|NEDD4 family E3 ubiquitin-protein ligase|L000001054|L000001779|L000001220", "Synonyms Interactor B": "DNA-directed RNA polymerase II core subunit RPB3|B44|L000001677|L000001589", "Tags": "-", "Throughput": "High Throughput", "from": "YER125W", "to": "YIL021W", "width": 1}, {"#BioGRID Interaction ID": 1516796, "Author": "O\u0027Connor HF (2015)", "BioGRID ID Interactor A": 36869, "BioGRID ID Interactor B": 34547, "Entrez Gene Interactor A": "856862", "Entrez Gene Interactor B": "854322", "Experimental System": "Affinity Capture-MS", "Experimental System Type": "physical", "Modification": "-", "Official Symbol Interactor A": "RSP5", "Official Symbol Interactor B": "RPB2", "Organism Interactor A": 559292, "Organism Interactor B": 559292, "Phenotypes": "-", "Pubmed ID": 26508657, "Qualifications": "Potential non-covalent interactors|The UBAITs (Ubiquitin-Activated Interaction Traps) method was used.", "Score": "-", "Source Database": "BIOGRID", "Synonyms Interactor A": "MDP1|MUT2|NPI1|SMM1|UBY1|NEDD4 family E3 ubiquitin-protein ligase|L000001054|L000001779|L000001220", "Synonyms Interactor B": "RPB150|RPO22|SIT2|SOH2|DNA-directed RNA polymerase II core subunit RPB2|B150|L000001588|L000001676", "Tags": "-", "Throughput": "Low Throughput", "from": "YER125W", "to": "YOR151C", "width": 1}, {"#BioGRID Interaction ID": 440476, "Author": "Breitkreutz A (2010)", "BioGRID ID Interactor A": 36869, "BioGRID ID Interactor B": 32853, "Entrez Gene Interactor A": "856862", "Entrez Gene Interactor B": "852451", "Experimental System": "Affinity Capture-MS", "Experimental System Type": "physical", "Modification": "-", "Official Symbol Interactor A": "RSP5", "Official Symbol Interactor B": "RPB5", "Organism Interactor A": 559292, "Organism Interactor B": 559292, "Phenotypes": "-", "Pubmed ID": 20489023, "Qualifications": "-", "Score": "0.926", "Source Database": "BIOGRID", "Synonyms Interactor A": "MDP1|MUT2|NPI1|SMM1|UBY1|NEDD4 family E3 ubiquitin-protein ligase|L000001054|L000001779|L000001220", "Synonyms Interactor B": "DNA-directed RNA polymerase core subunit RPB5|ABC27|L000001590|L000001679", "Tags": "-", "Throughput": "High Throughput", "from": "YER125W", "to": "YBR154C", "width": 1}, {"#BioGRID Interaction ID": 571938, "Author": "Kus B (2005)", "BioGRID ID Interactor A": 36869, "BioGRID ID Interactor B": 32464, "Entrez Gene Interactor A": "856862", "Entrez Gene Interactor B": "852013", "Experimental System": "Biochemical Activity", "Experimental System Type": "physical", "Modification": "Ubiquitination", "Official Symbol Interactor A": "RSP5", "Official Symbol Interactor B": "RPB7", "Organism Interactor A": 559292, "Organism Interactor B": 559292, "Phenotypes": "-", "Pubmed ID": 15955809, "Qualifications": "High Throughput: The in vitro Luminescent Ubiquitination Assay contained E1, Ubc4 [E2], biotinylated ubiquitin and GST-tagged proteins.", "Score": "-", "Source Database": "BIOGRID", "Synonyms Interactor A": "MDP1|MUT2|NPI1|SMM1|UBY1|NEDD4 family E3 ubiquitin-protein ligase|L000001054|L000001779|L000001220", "Synonyms Interactor B": "DNA-directed RNA polymerase II subunit RPB7|B16|L000001681", "Tags": "-", "Throughput": "High Throughput", "from": "YER125W", "to": "YDR404C", "width": 1}, {"#BioGRID Interaction ID": 2202799, "Author": "McCann TS (2016)", "BioGRID ID Interactor A": 31921, "BioGRID ID Interactor B": 34547, "Entrez Gene Interactor A": "851415", "Entrez Gene Interactor B": "854322", "Experimental System": "Affinity Capture-MS", "Experimental System Type": "physical", "Modification": "-", "Official Symbol Interactor A": "RPO21", "Official Symbol Interactor B": "RPB2", "Organism Interactor A": 559292, "Organism Interactor B": 559292, "Phenotypes": "-", "Pubmed ID": 26787877, "Qualifications": "Table 1", "Score": "-", "Source Database": "BIOGRID", "Synonyms Interactor A": "RPB1|RPB220|SUA8|DNA-directed RNA polymerase II core subunit RPO21|B220|L000001744", "Synonyms Interactor B": "RPB150|RPO22|SIT2|SOH2|DNA-directed RNA polymerase II core subunit RPB2|B150|L000001588|L000001676", "Tags": "-", "Throughput": "Low Throughput", "from": "YOR151C", "to": "YDL140C", "width": 1}, {"#BioGRID Interaction ID": 2334903, "Author": "Xu Y (2017)", "BioGRID ID Interactor A": 34967, "BioGRID ID Interactor B": 34547, "Entrez Gene Interactor A": "854791", "Entrez Gene Interactor B": "854322", "Experimental System": "Reconstituted Complex", "Experimental System Type": "physical", "Modification": "-", "Official Symbol Interactor A": "RPB3", "Official Symbol Interactor B": "RPB2", "Organism Interactor A": 559292, "Organism Interactor B": 559292, "Phenotypes": "-", "Pubmed ID": 28585565, "Qualifications": "-", "Score": "-", "Source Database": "BIOGRID", "Synonyms Interactor A": "DNA-directed RNA polymerase II core subunit RPB3|B44|L000001677|L000001589", "Synonyms Interactor B": "RPB150|RPO22|SIT2|SOH2|DNA-directed RNA polymerase II core subunit RPB2|B150|L000001588|L000001676", "Tags": "-", "Throughput": "Low Throughput", "from": "YOR151C", "to": "YIL021W", "width": 1}, {"#BioGRID Interaction ID": 823270, "Author": "Mosley AL (2013)", "BioGRID ID Interactor A": 33591, "BioGRID ID Interactor B": 34547, "Entrez Gene Interactor A": "853271", "Entrez Gene Interactor B": "854322", "Experimental System": "Affinity Capture-MS", "Experimental System Type": "physical", "Modification": "-", "Official Symbol Interactor A": "SET2", "Official Symbol Interactor B": "RPB2", "Organism Interactor A": 559292, "Organism Interactor B": 559292, "Phenotypes": "-", "Pubmed ID": 23418395, "Qualifications": "-", "Score": "-", "Source Database": "BIOGRID", "Synonyms Interactor A": "EZL1|histone methyltransferase SET2|KMT3|L000003090", "Synonyms Interactor B": "RPB150|RPO22|SIT2|SOH2|DNA-directed RNA polymerase II core subunit RPB2|B150|L000001588|L000001676", "Tags": "-", "Throughput": "Low Throughput", "from": "YOR151C", "to": "YJL168C", "width": 1}, {"#BioGRID Interaction ID": 272255, "Author": "Tarassov K (2008)", "BioGRID ID Interactor A": 32853, "BioGRID ID Interactor B": 34547, "Entrez Gene Interactor A": "852451", "Entrez Gene Interactor B": "854322", "Experimental System": "PCA", "Experimental System Type": "physical", "Modification": "-", "Official Symbol Interactor A": "RPB5", "Official Symbol Interactor B": "RPB2", "Organism Interactor A": 559292, "Organism Interactor B": 559292, "Phenotypes": "-", "Pubmed ID": 18467557, "Qualifications": "-", "Score": "-", "Source Database": "BIOGRID", "Synonyms Interactor A": "DNA-directed RNA polymerase core subunit RPB5|ABC27|L000001590|L000001679", "Synonyms Interactor B": "RPB150|RPO22|SIT2|SOH2|DNA-directed RNA polymerase II core subunit RPB2|B150|L000001588|L000001676", "Tags": "-", "Throughput": "High Throughput", "from": "YOR151C", "to": "YBR154C", "width": 1}, {"#BioGRID Interaction ID": 927831, "Author": "Duan R (2013)", "BioGRID ID Interactor A": 32464, "BioGRID ID Interactor B": 34547, "Entrez Gene Interactor A": "852013", "Entrez Gene Interactor B": "854322", "Experimental System": "Affinity Capture-MS", "Experimental System Type": "physical", "Modification": "-", "Official Symbol Interactor A": "RPB7", "Official Symbol Interactor B": "RPB2", "Organism Interactor A": 559292, "Organism Interactor B": 559292, "Phenotypes": "-", "Pubmed ID": 24513203, "Qualifications": "-", "Score": "-", "Source Database": "BIOGRID", "Synonyms Interactor A": "DNA-directed RNA polymerase II subunit RPB7|B16|L000001681", "Synonyms Interactor B": "RPB150|RPO22|SIT2|SOH2|DNA-directed RNA polymerase II core subunit RPB2|B150|L000001588|L000001676", "Tags": "-", "Throughput": "Low Throughput", "from": "YOR151C", "to": "YDR404C", "width": 1}, {"#BioGRID Interaction ID": 823198, "Author": "Mosley AL (2013)", "BioGRID ID Interactor A": 33308, "BioGRID ID Interactor B": 34547, "Entrez Gene Interactor A": "852955", "Entrez Gene Interactor B": "854322", "Experimental System": "Affinity Capture-MS", "Experimental System Type": "physical", "Modification": "-", "Official Symbol Interactor A": "SPT4", "Official Symbol Interactor B": "RPB2", "Organism Interactor A": 559292, "Organism Interactor B": 559292, "Phenotypes": "-", "Pubmed ID": 23418395, "Qualifications": "-", "Score": "-", "Source Database": "BIOGRID", "Synonyms Interactor A": "transcription elongation factor SPT4|L000002030", "Synonyms Interactor B": "RPB150|RPO22|SIT2|SOH2|DNA-directed RNA polymerase II core subunit RPB2|B150|L000001588|L000001676", "Tags": "-", "Throughput": "Low Throughput", "from": "YOR151C", "to": "YGR063C", "width": 1}, {"#BioGRID Interaction ID": 816945, "Author": "Hierlmeier T (2013)", "BioGRID ID Interactor A": 34547, "BioGRID ID Interactor B": 32711, "Entrez Gene Interactor A": "854322", "Entrez Gene Interactor B": "852295", "Experimental System": "Affinity Capture-MS", "Experimental System Type": "physical", "Modification": "-", "Official Symbol Interactor A": "RPB2", "Official Symbol Interactor B": "HHT1", "Organism Interactor A": 559292, "Organism Interactor B": 559292, "Phenotypes": "-", "Pubmed ID": 23209026, "Qualifications": "Growing cells containing Protein A-tagged bait protein were crosslinked using formaldehyde. Chromatin fractions were prepared and the bait proteins were purified using IgG coupled magnetic beads. The co-purified proteins were subjected to comparative MS analysis.", "Score": "-", "Source Database": "BIOGRID", "Synonyms Interactor A": "RPB150|RPO22|SIT2|SOH2|DNA-directed RNA polymerase II core subunit RPB2|B150|L000001588|L000001676", "Synonyms Interactor B": "BUR5|SIN2|histone H3|L000000772", "Tags": "-", "Throughput": "High Throughput", "from": "YOR151C", "to": "YBR010W", "width": 1}, {"#BioGRID Interaction ID": 2202802, "Author": "McCann TS (2016)", "BioGRID ID Interactor A": 31921, "BioGRID ID Interactor B": 32853, "Entrez Gene Interactor A": "851415", "Entrez Gene Interactor B": "852451", "Experimental System": "Affinity Capture-MS", "Experimental System Type": "physical", "Modification": "-", "Official Symbol Interactor A": "RPO21", "Official Symbol Interactor B": "RPB5", "Organism Interactor A": 559292, "Organism Interactor B": 559292, "Phenotypes": "-", "Pubmed ID": 26787877, "Qualifications": "Table 1", "Score": "-", "Source Database": "BIOGRID", "Synonyms Interactor A": "RPB1|RPB220|SUA8|DNA-directed RNA polymerase II core subunit RPO21|B220|L000001744", "Synonyms Interactor B": "DNA-directed RNA polymerase core subunit RPB5|ABC27|L000001590|L000001679", "Tags": "-", "Throughput": "Low Throughput", "from": "YBR154C", "to": "YDL140C", "width": 1}, {"#BioGRID Interaction ID": 2334910, "Author": "Xu Y (2017)", "BioGRID ID Interactor A": 34967, "BioGRID ID Interactor B": 32853, "Entrez Gene Interactor A": "854791", "Entrez Gene Interactor B": "852451", "Experimental System": "Reconstituted Complex", "Experimental System Type": "physical", "Modification": "-", "Official Symbol Interactor A": "RPB3", "Official Symbol Interactor B": "RPB5", "Organism Interactor A": 559292, "Organism Interactor B": 559292, "Phenotypes": "-", "Pubmed ID": 28585565, "Qualifications": "-", "Score": "-", "Source Database": "BIOGRID", "Synonyms Interactor A": "DNA-directed RNA polymerase II core subunit RPB3|B44|L000001677|L000001589", "Synonyms Interactor B": "DNA-directed RNA polymerase core subunit RPB5|ABC27|L000001590|L000001679", "Tags": "-", "Throughput": "Low Throughput", "from": "YBR154C", "to": "YIL021W", "width": 1}, {"#BioGRID Interaction ID": 823269, "Author": "Mosley AL (2013)", "BioGRID ID Interactor A": 33591, "BioGRID ID Interactor B": 32853, "Entrez Gene Interactor A": "853271", "Entrez Gene Interactor B": "852451", "Experimental System": "Affinity Capture-MS", "Experimental System Type": "physical", "Modification": "-", "Official Symbol Interactor A": "SET2", "Official Symbol Interactor B": "RPB5", "Organism Interactor A": 559292, "Organism Interactor B": 559292, "Phenotypes": "-", "Pubmed ID": 23418395, "Qualifications": "-", "Score": "-", "Source Database": "BIOGRID", "Synonyms Interactor A": "EZL1|histone methyltransferase SET2|KMT3|L000003090", "Synonyms Interactor B": "DNA-directed RNA polymerase core subunit RPB5|ABC27|L000001590|L000001679", "Tags": "-", "Throughput": "Low Throughput", "from": "YBR154C", "to": "YJL168C", "width": 1}, {"#BioGRID Interaction ID": 927843, "Author": "Duan R (2013)", "BioGRID ID Interactor A": 32464, "BioGRID ID Interactor B": 32853, "Entrez Gene Interactor A": "852013", "Entrez Gene Interactor B": "852451", "Experimental System": "Affinity Capture-MS", "Experimental System Type": "physical", "Modification": "-", "Official Symbol Interactor A": "RPB7", "Official Symbol Interactor B": "RPB5", "Organism Interactor A": 559292, "Organism Interactor B": 559292, "Phenotypes": "-", "Pubmed ID": 24513203, "Qualifications": "-", "Score": "-", "Source Database": "BIOGRID", "Synonyms Interactor A": "DNA-directed RNA polymerase II subunit RPB7|B16|L000001681", "Synonyms Interactor B": "DNA-directed RNA polymerase core subunit RPB5|ABC27|L000001590|L000001679", "Tags": "-", "Throughput": "Low Throughput", "from": "YBR154C", "to": "YDR404C", "width": 1}, {"#BioGRID Interaction ID": 823197, "Author": "Mosley AL (2013)", "BioGRID ID Interactor A": 33308, "BioGRID ID Interactor B": 32853, "Entrez Gene Interactor A": "852955", "Entrez Gene Interactor B": "852451", "Experimental System": "Affinity Capture-MS", "Experimental System Type": "physical", "Modification": "-", "Official Symbol Interactor A": "SPT4", "Official Symbol Interactor B": "RPB5", "Organism Interactor A": 559292, "Organism Interactor B": 559292, "Phenotypes": "-", "Pubmed ID": 23418395, "Qualifications": "-", "Score": "-", "Source Database": "BIOGRID", "Synonyms Interactor A": "transcription elongation factor SPT4|L000002030", "Synonyms Interactor B": "DNA-directed RNA polymerase core subunit RPB5|ABC27|L000001590|L000001679", "Tags": "-", "Throughput": "Low Throughput", "from": "YBR154C", "to": "YGR063C", "width": 1}, {"#BioGRID Interaction ID": 2397146, "Author": "Rossetto D (2014)", "BioGRID ID Interactor A": 35690, "BioGRID ID Interactor B": 33246, "Entrez Gene Interactor A": "855586", "Entrez Gene Interactor B": "852885", "Experimental System": "Affinity Capture-MS", "Experimental System Type": "physical", "Modification": "-", "Official Symbol Interactor A": "EAF7", "Official Symbol Interactor B": "SWC4", "Organism Interactor A": 559292, "Organism Interactor B": 559292, "Phenotypes": "-", "Pubmed ID": 24843044, "Qualifications": "-", "Score": "-", "Source Database": "BIOGRID", "Synonyms Interactor A": "-", "Synonyms Interactor B": "EAF2|GOD1", "Tags": "-", "Throughput": "Low Throughput", "from": "YNL136W", "to": "YGR002C", "width": 1}, {"#BioGRID Interaction ID": 2397151, "Author": "Rossetto D (2014)", "BioGRID ID Interactor A": 35690, "BioGRID ID Interactor B": 35717, "Entrez Gene Interactor A": "855586", "Entrez Gene Interactor B": "855616", "Experimental System": "Affinity Capture-MS", "Experimental System Type": "physical", "Modification": "-", "Official Symbol Interactor A": "EAF7", "Official Symbol Interactor B": "YAF9", "Organism Interactor A": 559292, "Organism Interactor B": 559292, "Phenotypes": "-", "Pubmed ID": 24843044, "Qualifications": "-", "Score": "-", "Source Database": "BIOGRID", "Synonyms Interactor A": "-", "Synonyms Interactor B": "S000007495", "Tags": "-", "Throughput": "Low Throughput", "from": "YNL136W", "to": "YNL107W", "width": 1}, {"#BioGRID Interaction ID": 264919, "Author": "Auger A (2008)", "BioGRID ID Interactor A": 33246, "BioGRID ID Interactor B": 35717, "Entrez Gene Interactor A": "852885", "Entrez Gene Interactor B": "855616", "Experimental System": "Affinity Capture-Western", "Experimental System Type": "physical", "Modification": "-", "Official Symbol Interactor A": "SWC4", "Official Symbol Interactor B": "YAF9", "Organism Interactor A": 559292, "Organism Interactor B": 559292, "Phenotypes": "-", "Pubmed ID": 18212047, "Qualifications": "Verified by IP/Western", "Score": "-", "Source Database": "BIOGRID", "Synonyms Interactor A": "EAF2|GOD1", "Synonyms Interactor B": "S000007495", "Tags": "-", "Throughput": "Low Throughput", "from": "YNL107W", "to": "YGR002C", "width": 1}, {"#BioGRID Interaction ID": 2406170, "Author": "Lin CL (2017)", "BioGRID ID Interactor A": 32391, "BioGRID ID Interactor B": 35717, "Entrez Gene Interactor A": "851934", "Entrez Gene Interactor B": "855616", "Experimental System": "Reconstituted Complex", "Experimental System Type": "physical", "Modification": "-", "Official Symbol Interactor A": "SWR1", "Official Symbol Interactor B": "YAF9", "Organism Interactor A": 559292, "Organism Interactor B": 559292, "Phenotypes": "-", "Pubmed ID": 28499038, "Qualifications": "-", "Score": "-", "Source Database": "BIOGRID", "Synonyms Interactor A": "chromatin-remodeling protein SWR1|S000007447", "Synonyms Interactor B": "S000007495", "Tags": "-", "Throughput": "Low Throughput", "from": "YNL107W", "to": "YDR334W", "width": 1}, {"#BioGRID Interaction ID": 2200993, "Author": "Garcia-Oliver E (2017)", "BioGRID ID Interactor A": 31658, "BioGRID ID Interactor B": 35717, "Entrez Gene Interactor A": "851115", "Entrez Gene Interactor B": "855616", "Experimental System": "Affinity Capture-MS", "Experimental System Type": "physical", "Modification": "-", "Official Symbol Interactor A": "BDF1", "Official Symbol Interactor B": "YAF9", "Organism Interactor A": 559292, "Organism Interactor B": 559292, "Phenotypes": "-", "Pubmed ID": 28068333, "Qualifications": "Figure 5", "Score": "-", "Source Database": "BIOGRID", "Synonyms Interactor A": "chromatin-binding protein BDF1|L000000165", "Synonyms Interactor B": "S000007495", "Tags": "-", "Throughput": "Low Throughput", "from": "YNL107W", "to": "YLR399C", "width": 1}, {"#BioGRID Interaction ID": 2459200, "Author": "Wang Y (2018)", "BioGRID ID Interactor A": 35717, "BioGRID ID Interactor B": 32711, "Entrez Gene Interactor A": "855616", "Entrez Gene Interactor B": "852295", "Experimental System": "Reconstituted Complex", "Experimental System Type": "physical", "Modification": "-", "Official Symbol Interactor A": "YAF9", "Official Symbol Interactor B": "HHT1", "Organism Interactor A": 559292, "Organism Interactor B": 559292, "Phenotypes": "-", "Pubmed ID": 29463709, "Qualifications": "SPR", "Score": "-", "Source Database": "BIOGRID", "Synonyms Interactor A": "S000007495", "Synonyms Interactor B": "BUR5|SIN2|histone H3|L000000772", "Tags": "-", "Throughput": "Low Throughput", "from": "YNL107W", "to": "YBR010W", "width": 1}, {"#BioGRID Interaction ID": 2451428, "Author": "Yurko N (2017)", "BioGRID ID Interactor A": 31921, "BioGRID ID Interactor B": 34967, "Entrez Gene Interactor A": "851415", "Entrez Gene Interactor B": "854791", "Experimental System": "Affinity Capture-Western", "Experimental System Type": "physical", "Modification": "-", "Official Symbol Interactor A": "RPO21", "Official Symbol Interactor B": "RPB3", "Organism Interactor A": 559292, "Organism Interactor B": 559292, "Phenotypes": "-", "Pubmed ID": 29220656, "Qualifications": "-", "Score": "-", "Source Database": "BIOGRID", "Synonyms Interactor A": "RPB1|RPB220|SUA8|DNA-directed RNA polymerase II core subunit RPO21|B220|L000001744", "Synonyms Interactor B": "DNA-directed RNA polymerase II core subunit RPB3|B44|L000001677|L000001589", "Tags": "-", "Throughput": "Low Throughput", "from": "YIL021W", "to": "YDL140C", "width": 1}, {"#BioGRID Interaction ID": 2334912, "Author": "Xu Y (2017)", "BioGRID ID Interactor A": 34967, "BioGRID ID Interactor B": 32464, "Entrez Gene Interactor A": "854791", "Entrez Gene Interactor B": "852013", "Experimental System": "Reconstituted Complex", "Experimental System Type": "physical", "Modification": "-", "Official Symbol Interactor A": "RPB3", "Official Symbol Interactor B": "RPB7", "Organism Interactor A": 559292, "Organism Interactor B": 559292, "Phenotypes": "-", "Pubmed ID": 28585565, "Qualifications": "-", "Score": "-", "Source Database": "BIOGRID", "Synonyms Interactor A": "DNA-directed RNA polymerase II core subunit RPB3|B44|L000001677|L000001589", "Synonyms Interactor B": "DNA-directed RNA polymerase II subunit RPB7|B16|L000001681", "Tags": "-", "Throughput": "Low Throughput", "from": "YIL021W", "to": "YDR404C", "width": 1}, {"#BioGRID Interaction ID": 823284, "Author": "Mosley AL (2013)", "BioGRID ID Interactor A": 33591, "BioGRID ID Interactor B": 34967, "Entrez Gene Interactor A": "853271", "Entrez Gene Interactor B": "854791", "Experimental System": "Affinity Capture-Western", "Experimental System Type": "physical", "Modification": "-", "Official Symbol Interactor A": "SET2", "Official Symbol Interactor B": "RPB3", "Organism Interactor A": 559292, "Organism Interactor B": 559292, "Phenotypes": "-", "Pubmed ID": 23418395, "Qualifications": "Approximately 50% decrease in recovery of Rpb4p and Rpb7p relative to other polymerase subunits when this bait is used in affinity purification", "Score": "-", "Source Database": "BIOGRID", "Synonyms Interactor A": "EZL1|histone methyltransferase SET2|KMT3|L000003090", "Synonyms Interactor B": "DNA-directed RNA polymerase II core subunit RPB3|B44|L000001677|L000001589", "Tags": "-", "Throughput": "Low Throughput", "from": "YIL021W", "to": "YJL168C", "width": 1}, {"#BioGRID Interaction ID": 2200156, "Author": "Harlen KM (2017)", "BioGRID ID Interactor A": 34967, "BioGRID ID Interactor B": 33308, "Entrez Gene Interactor A": "854791", "Entrez Gene Interactor B": "852955", "Experimental System": "Affinity Capture-MS", "Experimental System Type": "physical", "Modification": "-", "Official Symbol Interactor A": "RPB3", "Official Symbol Interactor B": "SPT4", "Organism Interactor A": 559292, "Organism Interactor B": 559292, "Phenotypes": "-", "Pubmed ID": 28043953, "Qualifications": "5\u0027 PolII enriched factors", "Score": "-", "Source Database": "BIOGRID", "Synonyms Interactor A": "DNA-directed RNA polymerase II core subunit RPB3|B44|L000001677|L000001589", "Synonyms Interactor B": "transcription elongation factor SPT4|L000002030", "Tags": "-", "Throughput": "High Throughput", "from": "YIL021W", "to": "YGR063C", "width": 1}, {"#BioGRID Interaction ID": 2202804, "Author": "McCann TS (2016)", "BioGRID ID Interactor A": 31921, "BioGRID ID Interactor B": 32464, "Entrez Gene Interactor A": "851415", "Entrez Gene Interactor B": "852013", "Experimental System": "Affinity Capture-MS", "Experimental System Type": "physical", "Modification": "-", "Official Symbol Interactor A": "RPO21", "Official Symbol Interactor B": "RPB7", "Organism Interactor A": 559292, "Organism Interactor B": 559292, "Phenotypes": "-", "Pubmed ID": 26787877, "Qualifications": "Table 1", "Score": "-", "Source Database": "BIOGRID", "Synonyms Interactor A": "RPB1|RPB220|SUA8|DNA-directed RNA polymerase II core subunit RPO21|B220|L000001744", "Synonyms Interactor B": "DNA-directed RNA polymerase II subunit RPB7|B16|L000001681", "Tags": "-", "Throughput": "Low Throughput", "from": "YDR404C", "to": "YDL140C", "width": 1}, {"#BioGRID Interaction ID": 823279, "Author": "Mosley AL (2013)", "BioGRID ID Interactor A": 33591, "BioGRID ID Interactor B": 32464, "Entrez Gene Interactor A": "853271", "Entrez Gene Interactor B": "852013", "Experimental System": "Affinity Capture-Western", "Experimental System Type": "physical", "Modification": "-", "Official Symbol Interactor A": "SET2", "Official Symbol Interactor B": "RPB7", "Organism Interactor A": 559292, "Organism Interactor B": 559292, "Phenotypes": "-", "Pubmed ID": 23418395, "Qualifications": "Approximately 50% decrease in recovery of Rpb4p and Rpb7p relative to other polymerase subunits when this bait is used in affinity purification", "Score": "-", "Source Database": "BIOGRID", "Synonyms Interactor A": "EZL1|histone methyltransferase SET2|KMT3|L000003090", "Synonyms Interactor B": "DNA-directed RNA polymerase II subunit RPB7|B16|L000001681", "Tags": "-", "Throughput": "Low Throughput", "from": "YDR404C", "to": "YJL168C", "width": 1}, {"#BioGRID Interaction ID": 823296, "Author": "Mosley AL (2013)", "BioGRID ID Interactor A": 33308, "BioGRID ID Interactor B": 32464, "Entrez Gene Interactor A": "852955", "Entrez Gene Interactor B": "852013", "Experimental System": "Affinity Capture-Western", "Experimental System Type": "physical", "Modification": "-", "Official Symbol Interactor A": "SPT4", "Official Symbol Interactor B": "RPB7", "Organism Interactor A": 559292, "Organism Interactor B": 559292, "Phenotypes": "-", "Pubmed ID": 23418395, "Qualifications": "-", "Score": "-", "Source Database": "BIOGRID", "Synonyms Interactor A": "transcription elongation factor SPT4|L000002030", "Synonyms Interactor B": "DNA-directed RNA polymerase II subunit RPB7|B16|L000001681", "Tags": "-", "Throughput": "Low Throughput", "from": "YDR404C", "to": "YGR063C", "width": 1}, {"#BioGRID Interaction ID": 2453082, "Author": "Lapointe CP (2017)", "BioGRID ID Interactor A": 33076, "BioGRID ID Interactor B": 32464, "Entrez Gene Interactor A": "852697", "Entrez Gene Interactor B": "852013", "Experimental System": "Affinity Capture-RNA", "Experimental System Type": "physical", "Modification": "-", "Official Symbol Interactor A": "MPT5", "Official Symbol Interactor B": "RPB7", "Organism Interactor A": 559292, "Organism Interactor B": 559292, "Phenotypes": "-", "Pubmed ID": 28768715, "Qualifications": "-", "Score": "-", "Source Database": "BIOGRID", "Synonyms Interactor A": "HTR1|PUF5|UTH4|L000001146", "Synonyms Interactor B": "DNA-directed RNA polymerase II subunit RPB7|B16|L000001681", "Tags": "-", "Throughput": "High Throughput", "from": "YDR404C", "to": "YGL178W", "width": 1}, {"#BioGRID Interaction ID": 2406173, "Author": "Lin CL (2017)", "BioGRID ID Interactor A": 32391, "BioGRID ID Interactor B": 33246, "Entrez Gene Interactor A": "851934", "Entrez Gene Interactor B": "852885", "Experimental System": "Reconstituted Complex", "Experimental System Type": "physical", "Modification": "-", "Official Symbol Interactor A": "SWR1", "Official Symbol Interactor B": "SWC4", "Organism Interactor A": 559292, "Organism Interactor B": 559292, "Phenotypes": "-", "Pubmed ID": 28499038, "Qualifications": "-", "Score": "-", "Source Database": "BIOGRID", "Synonyms Interactor A": "chromatin-remodeling protein SWR1|S000007447", "Synonyms Interactor B": "EAF2|GOD1", "Tags": "-", "Throughput": "Low Throughput", "from": "YGR002C", "to": "YDR334W", "width": 1}, {"#BioGRID Interaction ID": 2200991, "Author": "Garcia-Oliver E (2017)", "BioGRID ID Interactor A": 31658, "BioGRID ID Interactor B": 33246, "Entrez Gene Interactor A": "851115", "Entrez Gene Interactor B": "852885", "Experimental System": "Affinity Capture-MS", "Experimental System Type": "physical", "Modification": "-", "Official Symbol Interactor A": "BDF1", "Official Symbol Interactor B": "SWC4", "Organism Interactor A": 559292, "Organism Interactor B": 559292, "Phenotypes": "-", "Pubmed ID": 28068333, "Qualifications": "Figure 5", "Score": "-", "Source Database": "BIOGRID", "Synonyms Interactor A": "chromatin-binding protein BDF1|L000000165", "Synonyms Interactor B": "EAF2|GOD1", "Tags": "-", "Throughput": "Low Throughput", "from": "YGR002C", "to": "YLR399C", "width": 1}, {"#BioGRID Interaction ID": 1518900, "Author": "Behrmann H (2014)", "BioGRID ID Interactor A": 31417, "BioGRID ID Interactor B": 31655, "Entrez Gene Interactor A": "850840", "Entrez Gene Interactor B": "851112", "Experimental System": "Co-purification", "Experimental System Type": "physical", "Modification": "-", "Official Symbol Interactor A": "PEP3", "Official Symbol Interactor B": "VPS33", "Organism Interactor A": 559292, "Organism Interactor B": 559292, "Phenotypes": "-", "Pubmed ID": 25324549, "Qualifications": "-", "Score": "-", "Source Database": "BIOGRID", "Synonyms Interactor A": "VAM8|VPS18|VPT18|tethering complex subunit PEP3|L000001374|L000002473", "Synonyms Interactor B": "CLS14|MET27|PEP14|SLP1|VAM5|VPL25|VPT33|tethering complex ATP-binding subunit VPS33|L000002475", "Tags": "-", "Throughput": "Low Throughput", "from": "YLR396C", "to": "YLR148W", "width": 1}, {"#BioGRID Interaction ID": 694664, "Author": "Babu M (2012)", "BioGRID ID Interactor A": 31655, "BioGRID ID Interactor B": 36135, "Entrez Gene Interactor A": "851112", "Entrez Gene Interactor B": "856062", "Experimental System": "Affinity Capture-MS", "Experimental System Type": "physical", "Modification": "-", "Official Symbol Interactor A": "VPS33", "Official Symbol Interactor B": "VPS16", "Organism Interactor A": 559292, "Organism Interactor B": 559292, "Phenotypes": "-", "Pubmed ID": 22940862, "Qualifications": "Purification data downloaded from http://wodaklab.org/membrane_web/downloads/Purifications.zip, filtered for LCMS/MS confidence \u003e 90% and MALDI-TOF Z-score \u003e 1.", "Score": "-", "Source Database": "BIOGRID", "Synonyms Interactor A": "CLS14|MET27|PEP14|SLP1|VAM5|VPL25|VPT33|tethering complex ATP-binding subunit VPS33|L000002475", "Synonyms Interactor B": "CVT15|SVL6|VAM9|VPT16|tethering complex subunit VPS16|L000002471|L000003119|L000004766|S000029128", "Tags": "-", "Throughput": "High Throughput", "from": "YLR396C", "to": "YPL045W", "width": 1}, {"#BioGRID Interaction ID": 2513085, "Author": "Karim MA (2018)", "BioGRID ID Interactor A": 32136, "BioGRID ID Interactor B": 31655, "Entrez Gene Interactor A": "851653", "Entrez Gene Interactor B": "851112", "Experimental System": "Affinity Capture-Western", "Experimental System Type": "physical", "Modification": "-", "Official Symbol Interactor A": "VPS41", "Official Symbol Interactor B": "VPS33", "Organism Interactor A": 559292, "Organism Interactor B": 559292, "Phenotypes": "-", "Pubmed ID": 30269949, "Qualifications": "-", "Score": "-", "Source Database": "BIOGRID", "Synonyms Interactor A": "CVT8|FET2|SVL2|VAM2|VPL20|L000003512|L000004234", "Synonyms Interactor B": "CLS14|MET27|PEP14|SLP1|VAM5|VPL25|VPT33|tethering complex ATP-binding subunit VPS33|L000002475", "Tags": "-", "Throughput": "Low Throughput", "from": "YLR396C", "to": "YDR080W", "width": 1}, {"#BioGRID Interaction ID": 823287, "Author": "Mosley AL (2013)", "BioGRID ID Interactor A": 33591, "BioGRID ID Interactor B": 31921, "Entrez Gene Interactor A": "853271", "Entrez Gene Interactor B": "851415", "Experimental System": "Affinity Capture-Western", "Experimental System Type": "physical", "Modification": "-", "Official Symbol Interactor A": "SET2", "Official Symbol Interactor B": "RPO21", "Organism Interactor A": 559292, "Organism Interactor B": 559292, "Phenotypes": "-", "Pubmed ID": 23418395, "Qualifications": "C-terminal domain of Rpo21p shows increased levels of serine phosphorylation", "Score": "-", "Source Database": "BIOGRID", "Synonyms Interactor A": "EZL1|histone methyltransferase SET2|KMT3|L000003090", "Synonyms Interactor B": "RPB1|RPB220|SUA8|DNA-directed RNA polymerase II core subunit RPO21|B220|L000001744", "Tags": "-", "Throughput": "Low Throughput", "from": "YJL168C", "to": "YDL140C", "width": 1}, {"#BioGRID Interaction ID": 636004, "Author": "Green EM (2012)", "BioGRID ID Interactor A": 33591, "BioGRID ID Interactor B": 32711, "Entrez Gene Interactor A": "853271", "Entrez Gene Interactor B": "852295", "Experimental System": "Biochemical Activity", "Experimental System Type": "physical", "Modification": "Methylation", "Official Symbol Interactor A": "SET2", "Official Symbol Interactor B": "HHT1", "Organism Interactor A": 559292, "Organism Interactor B": 559292, "Phenotypes": "-", "Pubmed ID": 22343720, "Qualifications": "-", "Score": "-", "Source Database": "BIOGRID", "Synonyms Interactor A": "EZL1|histone methyltransferase SET2|KMT3|L000003090", "Synonyms Interactor B": "BUR5|SIN2|histone H3|L000000772", "Tags": "-", "Throughput": "Low Throughput", "from": "YJL168C", "to": "YBR010W", "width": 1}, {"#BioGRID Interaction ID": 2453218, "Author": "Lapointe CP (2017)", "BioGRID ID Interactor A": 33076, "BioGRID ID Interactor B": 33591, "Entrez Gene Interactor A": "852697", "Entrez Gene Interactor B": "853271", "Experimental System": "Affinity Capture-RNA", "Experimental System Type": "physical", "Modification": "-", "Official Symbol Interactor A": "MPT5", "Official Symbol Interactor B": "SET2", "Organism Interactor A": 559292, "Organism Interactor B": 559292, "Phenotypes": "-", "Pubmed ID": 28768715, "Qualifications": "-", "Score": "-", "Source Database": "BIOGRID", "Synonyms Interactor A": "HTR1|PUF5|UTH4|L000001146", "Synonyms Interactor B": "EZL1|histone methyltransferase SET2|KMT3|L000003090", "Tags": "-", "Throughput": "High Throughput", "from": "YJL168C", "to": "YGL178W", "width": 1}, {"#BioGRID Interaction ID": 1518899, "Author": "Behrmann H (2014)", "BioGRID ID Interactor A": 31417, "BioGRID ID Interactor B": 36135, "Entrez Gene Interactor A": "850840", "Entrez Gene Interactor B": "856062", "Experimental System": "Co-purification", "Experimental System Type": "physical", "Modification": "-", "Official Symbol Interactor A": "PEP3", "Official Symbol Interactor B": "VPS16", "Organism Interactor A": 559292, "Organism Interactor B": 559292, "Phenotypes": "-", "Pubmed ID": 25324549, "Qualifications": "-", "Score": "-", "Source Database": "BIOGRID", "Synonyms Interactor A": "VAM8|VPS18|VPT18|tethering complex subunit PEP3|L000001374|L000002473", "Synonyms Interactor B": "CVT15|SVL6|VAM9|VPT16|tethering complex subunit VPS16|L000002471|L000003119|L000004766|S000029128", "Tags": "-", "Throughput": "Low Throughput", "from": "YPL045W", "to": "YLR148W", "width": 1}, {"#BioGRID Interaction ID": 2381724, "Author": "Balderhaar HJ (2013)", "BioGRID ID Interactor A": 32136, "BioGRID ID Interactor B": 36135, "Entrez Gene Interactor A": "851653", "Entrez Gene Interactor B": "856062", "Experimental System": "Affinity Capture-Western", "Experimental System Type": "physical", "Modification": "-", "Official Symbol Interactor A": "VPS41", "Official Symbol Interactor B": "VPS16", "Organism Interactor A": 559292, "Organism Interactor B": 559292, "Phenotypes": "-", "Pubmed ID": 23417307, "Qualifications": "-", "Score": "-", "Source Database": "BIOGRID", "Synonyms Interactor A": "CVT8|FET2|SVL2|VAM2|VPL20|L000003512|L000004234", "Synonyms Interactor B": "CVT15|SVL6|VAM9|VPT16|tethering complex subunit VPS16|L000002471|L000003119|L000004766|S000029128", "Tags": "-", "Throughput": "Low Throughput", "from": "YPL045W", "to": "YDR080W", "width": 1}, {"#BioGRID Interaction ID": 691687, "Author": "Smolle M (2012)", "BioGRID ID Interactor A": 32711, "BioGRID ID Interactor B": 31921, "Entrez Gene Interactor A": "852295", "Entrez Gene Interactor B": "851415", "Experimental System": "Affinity Capture-MS", "Experimental System Type": "physical", "Modification": "-", "Official Symbol Interactor A": "HHT1", "Official Symbol Interactor B": "RPO21", "Organism Interactor A": 559292, "Organism Interactor B": 559292, "Phenotypes": "-", "Pubmed ID": 22922743, "Qualifications": "-", "Score": "-", "Source Database": "BIOGRID", "Synonyms Interactor A": "BUR5|SIN2|histone H3|L000000772", "Synonyms Interactor B": "RPB1|RPB220|SUA8|DNA-directed RNA polymerase II core subunit RPO21|B220|L000001744", "Tags": "-", "Throughput": "Low Throughput", "from": "YBR010W", "to": "YDL140C", "width": 1}, {"#BioGRID Interaction ID": 516708, "Author": "Krogan NJ (2003)", "BioGRID ID Interactor A": 32711, "BioGRID ID Interactor B": 31658, "Entrez Gene Interactor A": "852295", "Entrez Gene Interactor B": "851115", "Experimental System": "Affinity Capture-Western", "Experimental System Type": "physical", "Modification": "-", "Official Symbol Interactor A": "HHT1", "Official Symbol Interactor B": "BDF1", "Organism Interactor A": 559292, "Organism Interactor B": 559292, "Phenotypes": "-", "Pubmed ID": 14690608, "Qualifications": "-", "Score": "-", "Source Database": "BIOGRID", "Synonyms Interactor A": "BUR5|SIN2|histone H3|L000000772", "Synonyms Interactor B": "chromatin-binding protein BDF1|L000000165", "Tags": "-", "Throughput": "Low Throughput", "from": "YBR010W", "to": "YLR399C", "width": 1}, {"#BioGRID Interaction ID": 2452965, "Author": "Lapointe CP (2017)", "BioGRID ID Interactor A": 33076, "BioGRID ID Interactor B": 32711, "Entrez Gene Interactor A": "852697", "Entrez Gene Interactor B": "852295", "Experimental System": "Affinity Capture-RNA", "Experimental System Type": "physical", "Modification": "-", "Official Symbol Interactor A": "MPT5", "Official Symbol Interactor B": "HHT1", "Organism Interactor A": 559292, "Organism Interactor B": 559292, "Phenotypes": "-", "Pubmed ID": 28768715, "Qualifications": "-", "Score": "-", "Source Database": "BIOGRID", "Synonyms Interactor A": "HTR1|PUF5|UTH4|L000001146", "Synonyms Interactor B": "BUR5|SIN2|histone H3|L000000772", "Tags": "-", "Throughput": "High Throughput", "from": "YBR010W", "to": "YGL178W", "width": 1}, {"#BioGRID Interaction ID": 2406169, "Author": "Lin CL (2017)", "BioGRID ID Interactor A": 32391, "BioGRID ID Interactor B": 31658, "Entrez Gene Interactor A": "851934", "Entrez Gene Interactor B": "851115", "Experimental System": "Reconstituted Complex", "Experimental System Type": "physical", "Modification": "-", "Official Symbol Interactor A": "SWR1", "Official Symbol Interactor B": "BDF1", "Organism Interactor A": 559292, "Organism Interactor B": 559292, "Phenotypes": "-", "Pubmed ID": 28499038, "Qualifications": "-", "Score": "-", "Source Database": "BIOGRID", "Synonyms Interactor A": "chromatin-remodeling protein SWR1|S000007447", "Synonyms Interactor B": "chromatin-binding protein BDF1|L000000165", "Tags": "-", "Throughput": "Low Throughput", "from": "YLR399C", "to": "YDR334W", "width": 1}, {"#BioGRID Interaction ID": 2453154, "Author": "Lapointe CP (2017)", "BioGRID ID Interactor A": 33076, "BioGRID ID Interactor B": 31658, "Entrez Gene Interactor A": "852697", "Entrez Gene Interactor B": "851115", "Experimental System": "Affinity Capture-RNA", "Experimental System Type": "physical", "Modification": "-", "Official Symbol Interactor A": "MPT5", "Official Symbol Interactor B": "BDF1", "Organism Interactor A": 559292, "Organism Interactor B": 559292, "Phenotypes": "-", "Pubmed ID": 28768715, "Qualifications": "-", "Score": "-", "Source Database": "BIOGRID", "Synonyms Interactor A": "HTR1|PUF5|UTH4|L000001146", "Synonyms Interactor B": "chromatin-binding protein BDF1|L000000165", "Tags": "-", "Throughput": "High Throughput", "from": "YLR399C", "to": "YGL178W", "width": 1}, {"#BioGRID Interaction ID": 2453100, "Author": "Lapointe CP (2017)", "BioGRID ID Interactor A": 33076, "BioGRID ID Interactor B": 32391, "Entrez Gene Interactor A": "852697", "Entrez Gene Interactor B": "851934", "Experimental System": "Affinity Capture-RNA", "Experimental System Type": "physical", "Modification": "-", "Official Symbol Interactor A": "MPT5", "Official Symbol Interactor B": "SWR1", "Organism Interactor A": 559292, "Organism Interactor B": 559292, "Phenotypes": "-", "Pubmed ID": 28768715, "Qualifications": "-", "Score": "-", "Source Database": "BIOGRID", "Synonyms Interactor A": "HTR1|PUF5|UTH4|L000001146", "Synonyms Interactor B": "chromatin-remodeling protein SWR1|S000007447", "Tags": "-", "Throughput": "High Throughput", "from": "YGL178W", "to": "YDR334W", "width": 1}, {"#BioGRID Interaction ID": 2381723, "Author": "Balderhaar HJ (2013)", "BioGRID ID Interactor A": 32136, "BioGRID ID Interactor B": 31417, "Entrez Gene Interactor A": "851653", "Entrez Gene Interactor B": "850840", "Experimental System": "Affinity Capture-Western", "Experimental System Type": "physical", "Modification": "-", "Official Symbol Interactor A": "VPS41", "Official Symbol Interactor B": "PEP3", "Organism Interactor A": 559292, "Organism Interactor B": 559292, "Phenotypes": "-", "Pubmed ID": 23417307, "Qualifications": "-", "Score": "-", "Source Database": "BIOGRID", "Synonyms Interactor A": "CVT8|FET2|SVL2|VAM2|VPL20|L000003512|L000004234", "Synonyms Interactor B": "VAM8|VPS18|VPT18|tethering complex subunit PEP3|L000001374|L000002473", "Tags": "-", "Throughput": "Low Throughput", "from": "YDR080W", "to": "YLR148W", "width": 1}, {"#BioGRID Interaction ID": 2386639, "Author": "Silva A (2017)", "BioGRID ID Interactor A": 33308, "BioGRID ID Interactor B": 31921, "Entrez Gene Interactor A": "852955", "Entrez Gene Interactor B": "851415", "Experimental System": "Affinity Capture-Western", "Experimental System Type": "physical", "Modification": "-", "Official Symbol Interactor A": "SPT4", "Official Symbol Interactor B": "RPO21", "Organism Interactor A": 559292, "Organism Interactor B": 559292, "Phenotypes": "-", "Pubmed ID": 29155810, "Qualifications": "-", "Score": "-", "Source Database": "BIOGRID", "Synonyms Interactor A": "transcription elongation factor SPT4|L000002030", "Synonyms Interactor B": "RPB1|RPB220|SUA8|DNA-directed RNA polymerase II core subunit RPO21|B220|L000001744", "Tags": "-", "Throughput": "Low Throughput", "from": "YGR063C", "to": "YDL140C", "width": 1}]);
+
+                  nodeColors = {};
+                  allNodes = nodes.get({ returnType: "Object" });
+                  for (nodeId in allNodes) {
+                    nodeColors[nodeId] = allNodes[nodeId].color;
+                  }
+                  allEdges = edges.get({ returnType: "Object" });
+                  // adding nodes and edges to the graph
+                  data = {nodes: nodes, edges: edges};
+
+                  var options = {
+    "configure": {
+        "enabled": true,
+        "filter": "physics"
+    },
+    "edges": {
+        "color": {
+            "inherit": true
+        },
+        "smooth": {
+            "enabled": true,
+            "type": "dynamic"
+        }
+    },
+    "interaction": {
+        "dragNodes": true,
+        "hideEdgesOnDrag": false,
+        "hideNodesOnDrag": false
+    },
+    "physics": {
+        "enabled": true,
+        "stabilization": {
+            "enabled": true,
+            "fit": true,
+            "iterations": 1000,
+            "onlyDynamicEdges": false,
+            "updateInterval": 50
+        }
+    }
+};
+
+                  
+
+
+                  
+                  // if this network requires displaying the configure window,
+                  // put it in its div
+                  options.configure["container"] = document.getElementById("config");
+                  
+
+                  network = new vis.Network(container, data, options);
+
+                  
+
+                  
+                    network.on("selectNode", neighbourhoodHighlight);
+                  
+
+                  
+
+
+                  
+
+                  return network;
+
+              }
+              drawGraph();
+        </script>
+    </body>
+</html>
