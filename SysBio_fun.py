@@ -1,6 +1,7 @@
 import networkx as nx
 import matplotlib.pyplot as plt
 import numpy as np
+from pyvis.network import Network
 
 #############################################
 #   This is a module created to hold        #
@@ -59,6 +60,22 @@ def graph_info(g):
         print("""\
 The graph is not undirected. Therefore .is_connected() does not work.
         """)
+
+
+def show_html(graph, name="nx", show=True, size="small"):
+    """
+    Generate and display the graph through pyvis
+    """
+    
+    if size == "small":
+        nt = Network("500px", "500px")
+    else:
+        nt = Network("1080px", "1920px")
+        
+    nt.from_nx(graph)
+    if show == True:
+        nt.show(f"{name}.html")
+
 
 
 def nice_plot(title, xlab, ylab, show=True):
