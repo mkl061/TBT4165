@@ -1,13 +1,18 @@
-import networkx as nx
-import matplotlib.pyplot as plt
-import numpy as np
-from pyvis.network import Network
-
 #############################################
 #   This is a module created to hold        #
 #   all custom functions used in multiple   #
 #   project throughout the TBT4165 course   #
 #############################################
+
+
+## Imports:
+import networkx as nx
+import matplotlib.pyplot as plt
+import numpy as np
+from pyvis.network import Network
+
+
+## Functions:
 
 def connected_ER(N, E):
     """
