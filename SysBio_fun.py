@@ -67,18 +67,31 @@ The graph is not undirected. Therefore .is_connected() does not work.
         """)
 
 
-def show_html(graph, name="nx", show=True, size="small"):
+def show_html(graph, name="nx", show=True, size="small", more=False):
     """
-    Generate and display the graph through pyvis
+    Generate and display the graph through pyvis.
+    show : bool, True result in display of network
+    size : "small" = 500px*500px or "large" =  1080px*1920px
+    more : filtering and physics options added to the html
     """
+
+    in_ipynb = {"notebook":True, "cdn_resources":"remote"}
     
     if size == "small":
-        nt = Network("500px", "500px")
+        s = {"height":"500px", "width":"500px"}
     else:
-        nt = Network("1080px", "1920px")
-        
-    nt.from_nx(graph)
-    if show == True:
+        s = {"height":"1080px", "width":"1920px"}
+    
+    if more:
+        m = {"select_menu":True, "filter_menu":True}
+        nt = Network(**s, **m, **in_ipynb)
+        nt.show_buttons(filter_="physics")
+        nt.from_nx(graph)
+    else:
+        nt = Network(**s, **in_ipynb)
+        nt.from_nx(graph)
+    
+    if show:
         nt.show(f"{name}.html")
 
 
@@ -107,3 +120,16 @@ def plot_degree_distribution(graph):
     
     return [x, y]
     #return plt.scatter(x,y)
+
+
+def multi_plot(plot_type, lst_of_xs, lst_of_ys):
+    figure, axis = plt.subplots(1, len(lst_of_ys))
+    
+    plot_types = ["scatter", "plot"]
+    if plot_type not in plot_types:
+        raise Exception(f"Method {plot_type} not implemented for axis")
+        
+    for i in range(len(lst_of_ys)):
+        eval(f"axis[{i}].{plot_type}(lst_of_xs[{i}],lst_of_ys[{i}])")
+    
+    plt.show()
