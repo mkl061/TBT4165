@@ -1,0 +1,168 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        
+            <script src="lib/bindings/utils.js"></script>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/dist/vis-network.min.css" integrity="sha512-WgxfT5LWjfszlPHXRmBWHkV2eceiWTOBvrKCNbdgDYTHrT2AeLCGbF4sZlZw3UMN3WtL0tGUoIAKsu8mllg/XA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/vis-network.min.js" integrity="sha512-LnvoEWDFrqGHlHmDD2101OrLcbsfkrzoSpvtSQtxK3RMnRV0eOkhhBN2dXHKRrUU8p2DGRTk35n4O8nWSVe1mQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+            
+        
+<center>
+<h1></h1>
+</center>
+
+<!-- <link rel="stylesheet" href="../node_modules/vis/dist/vis.min.css" type="text/css" />
+<script type="text/javascript" src="../node_modules/vis/dist/vis.js"> </script>-->
+        <link
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css"
+          rel="stylesheet"
+          integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6"
+          crossorigin="anonymous"
+        />
+        <script
+          src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js"
+          integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf"
+          crossorigin="anonymous"
+        ></script>
+
+
+        <center>
+          <h1></h1>
+        </center>
+        <style type="text/css">
+
+             #mynetwork {
+                 width: 500px;
+                 height: 500px;
+                 background-color: #ffffff;
+                 border: 1px solid lightgray;
+                 position: relative;
+                 float: left;
+             }
+
+             
+
+             
+             #config {
+                 float: left;
+                 width: 400px;
+                 height: 600px;
+             }
+             
+
+             
+        </style>
+    </head>
+
+
+    <body>
+        <div class="card" style="width: 100%">
+            
+            
+            <div id="mynetwork" class="card-body"></div>
+        </div>
+
+        
+        
+            <div id="config"></div>
+        
+
+        <script type="text/javascript">
+
+              // initialize global variables.
+              var edges;
+              var nodes;
+              var allNodes;
+              var allEdges;
+              var nodeColors;
+              var originalNodes;
+              var network;
+              var container;
+              var options, data;
+              var filter = {
+                  item : '',
+                  property : '',
+                  value : []
+              };
+
+              
+
+              
+
+              // This method is responsible for drawing the graph, returns the drawn network
+              function drawGraph() {
+                  var container = document.getElementById('mynetwork');
+
+                  
+
+                  // parsing and collecting nodes and edges from the python
+                  nodes = new vis.DataSet([{"color": "blue", "id": "YDL007W", "label": "YDL007W", "shape": "dot"}, {"color": "green", "id": "YDR359C", "label": "YDR359C", "shape": "dot"}, {"color": "green", "id": "YNL107W", "label": "YNL107W", "shape": "dot"}, {"color": "green", "id": "YDL160C", "label": "YDL160C", "shape": "dot"}, {"color": "green", "id": "YOR151C", "label": "YOR151C", "shape": "dot"}, {"color": "blue", "id": "YBR198C", "label": "YBR198C", "shape": "dot"}, {"color": "blue", "id": "YDR363W-A", "label": "YDR363W-A", "shape": "dot"}, {"color": "red", "id": "YDR145W", "label": "YDR145W", "shape": "dot"}, {"color": "green", "id": "YJL168C", "label": "YJL168C", "shape": "dot"}, {"color": "red", "id": "YBR111W-A", "label": "YBR111W-A", "shape": "dot"}, {"color": "blue", "id": "YMR223W", "label": "YMR223W", "shape": "dot"}, {"color": "blue", "id": "YDR167W", "label": "YDR167W", "shape": "dot"}, {"color": "green", "id": "YOL012C", "label": "YOL012C", "shape": "dot"}, {"color": "green", "id": "YDR334W", "label": "YDR334W", "shape": "dot"}, {"color": "blue", "id": "YPR108W", "label": "YPR108W", "shape": "dot"}, {"color": "green", "id": "YBR010W", "label": "YBR010W", "shape": "dot"}, {"color": "red", "id": "YDR392W", "label": "YDR392W", "shape": "dot"}, {"color": "blue", "id": "YIL075C", "label": "YIL075C", "shape": "dot"}, {"color": "red", "id": "YHR027C", "label": "YHR027C", "shape": "dot"}, {"color": "blue", "id": "YGR232W", "label": "YGR232W", "shape": "dot"}, {"color": "green", "id": "YDL140C", "label": "YDL140C", "shape": "dot"}, {"color": "blue", "id": "YFR052W", "label": "YFR052W", "shape": "dot"}, {"color": "blue", "id": "YHL030W", "label": "YHL030W", "shape": "dot"}, {"color": "green", "id": "YLR421C", "label": "YLR421C", "shape": "dot"}, {"color": "green", "id": "YDR404C", "label": "YDR404C", "shape": "dot"}, {"color": "green", "id": "YNL136W", "label": "YNL136W", "shape": "dot"}, {"color": "blue", "id": "YER012W", "label": "YER012W", "shape": "dot"}, {"color": "red", "id": "YDL097C", "label": "YDL097C", "shape": "dot"}, {"color": "green", "id": "YBR154C", "label": "YBR154C", "shape": "dot"}, {"color": "green", "id": "YLR148W", "label": "YLR148W", "shape": "dot"}, {"color": "green", "id": "YGL178W", "label": "YGL178W", "shape": "dot"}, {"color": "green", "id": "YAL011W", "label": "YAL011W", "shape": "dot"}, {"color": "red", "id": "YOL148C", "label": "YOL148C", "shape": "dot"}, {"color": "blue", "id": "YDR427W", "label": "YDR427W", "shape": "dot"}, {"color": "blue", "id": "YOR117W", "label": "YOR117W", "shape": "dot"}, {"color": "green", "id": "YLR399C", "label": "YLR399C", "shape": "dot"}, {"color": "green", "id": "YML010W", "label": "YML010W", "shape": "dot"}, {"color": "blue", "id": "YHR200W", "label": "YHR200W", "shape": "dot"}, {"color": "blue", "id": "YDR448W", "label": "YDR448W", "shape": "dot"}, {"color": "blue", "id": "YOR261C", "label": "YOR261C", "shape": "dot"}, {"color": "blue", "id": "YHR099W", "label": "YHR099W", "shape": "dot"}, {"color": "red", "id": "YKL145W", "label": "YKL145W", "shape": "dot"}, {"color": "blue", "id": "YER021W", "label": "YER021W", "shape": "dot"}, {"color": "blue", "id": "YDL147W", "label": "YDL147W", "shape": "dot"}, {"color": "green", "id": "YPR187W", "label": "YPR187W", "shape": "dot"}, {"color": "green", "id": "YMR231W", "label": "YMR231W", "shape": "dot"}, {"color": "green", "id": "YHR090C", "label": "YHR090C", "shape": "dot"}, {"color": "green", "id": "YGR063C", "label": "YGR063C", "shape": "dot"}, {"color": "blue", "id": "YLR055C", "label": "YLR055C", "shape": "dot"}, {"color": "blue", "id": "YBR272C", "label": "YBR272C", "shape": "dot"}, {"color": "red", "id": "YFR010W", "label": "YFR010W", "shape": "dot"}, {"color": "blue", "id": "YMR236W", "label": "YMR236W", "shape": "dot"}, {"color": "red", "id": "YGL048C", "label": "YGL048C", "shape": "dot"}, {"color": "green", "id": "YFL039C", "label": "YFL039C", "shape": "dot"}, {"color": "blue", "id": "YPL254W", "label": "YPL254W", "shape": "dot"}, {"color": "blue", "id": "YDR394W", "label": "YDR394W", "shape": "dot"}, {"color": "green", "id": "YLR396C", "label": "YLR396C", "shape": "dot"}, {"color": "green", "id": "YGR002C", "label": "YGR002C", "shape": "dot"}, {"color": "blue", "id": "YFR004W", "label": "YFR004W", "shape": "dot"}, {"color": "blue", "id": "YGR252W", "label": "YGR252W", "shape": "dot"}, {"color": "green", "id": "YIL021W", "label": "YIL021W", "shape": "dot"}, {"color": "green", "id": "YDR080W", "label": "YDR080W", "shape": "dot"}, {"color": "green", "id": "YPL045W", "label": "YPL045W", "shape": "dot"}, {"color": "blue", "id": "YGL066W", "label": "YGL066W", "shape": "dot"}, {"color": "green", "id": "YER125W", "label": "YER125W", "shape": "dot"}, {"color": "red", "id": "YDR176W", "label": "YDR176W", "shape": "dot"}, {"color": "red", "id": "YCL010C", "label": "YCL010C", "shape": "dot"}, {"color": "red", "id": "YGL112C", "label": "YGL112C", "shape": "dot"}, {"color": "blue", "id": "YBR081C", "label": "YBR081C", "shape": "dot"}, {"color": "red", "id": "YPL047W", "label": "YPL047W", "shape": "dot"}, {"color": "blue", "id": "YOR259C", "label": "YOR259C", "shape": "dot"}]);
+                  edges = new vis.DataSet([{"from": "YDL007W", "to": "YHR027C"}, {"from": "YDL007W", "to": "YHR200W"}, {"from": "YDL007W", "to": "YFR004W"}, {"from": "YDL007W", "to": "YFR052W"}, {"from": "YDL007W", "to": "YIL075C"}, {"from": "YDL007W", "to": "YDL147W"}, {"from": "YDL007W", "to": "YDL097C"}, {"from": "YDL007W", "to": "YDR427W"}, {"from": "YDL007W", "to": "YKL145W"}, {"from": "YDL007W", "to": "YGL048C"}, {"from": "YDL007W", "to": "YBR272C"}, {"from": "YDL007W", "to": "YFR010W"}, {"from": "YDL007W", "to": "YDR394W"}, {"from": "YDL007W", "to": "YDR363W-A"}, {"from": "YDL007W", "to": "YER012W"}, {"from": "YDL007W", "to": "YOR117W"}, {"from": "YDL007W", "to": "YPR108W"}, {"from": "YDL007W", "to": "YHL030W"}, {"from": "YDL007W", "to": "YGR232W"}, {"from": "YDL007W", "to": "YBR081C"}, {"from": "YDR359C", "to": "YDL140C"}, {"from": "YDR359C", "to": "YGR002C"}, {"from": "YDR359C", "to": "YHR099W"}, {"from": "YDR359C", "to": "YHR090C"}, {"from": "YDR359C", "to": "YNL107W"}, {"from": "YDR359C", "to": "YNL136W"}, {"from": "YDR359C", "to": "YFL039C"}, {"from": "YDR359C", "to": "YBR010W"}, {"from": "YDR359C", "to": "YDL160C"}, {"from": "YNL107W", "to": "YGR002C"}, {"from": "YNL107W", "to": "YHR099W"}, {"from": "YNL107W", "to": "YDR334W"}, {"from": "YNL107W", "to": "YHR090C"}, {"from": "YNL107W", "to": "YOL012C"}, {"from": "YNL107W", "to": "YLR399C"}, {"from": "YNL107W", "to": "YFL039C"}, {"from": "YNL107W", "to": "YAL011W"}, {"from": "YNL107W", "to": "YNL136W"}, {"from": "YNL107W", "to": "YBR010W"}, {"from": "YDL160C", "to": "YDL140C"}, {"from": "YDL160C", "to": "YML010W"}, {"from": "YDL160C", "to": "YHR027C"}, {"from": "YDL160C", "to": "YHR200W"}, {"from": "YDL160C", "to": "YFR004W"}, {"from": "YDL160C", "to": "YIL075C"}, {"from": "YDL160C", "to": "YDR427W"}, {"from": "YDL160C", "to": "YDR394W"}, {"from": "YDL160C", "to": "YPR108W"}, {"from": "YDL160C", "to": "YFL039C"}, {"from": "YDL160C", "to": "YGL178W"}, {"from": "YDL160C", "to": "YBR111W-A"}, {"from": "YDL160C", "to": "YBR010W"}, {"from": "YDL160C", "to": "YMR223W"}, {"from": "YDL160C", "to": "YBR198C"}, {"from": "YDL160C", "to": "YGR252W"}, {"from": "YDL160C", "to": "YLR396C"}, {"from": "YDL160C", "to": "YLR055C"}, {"from": "YDL160C", "to": "YDR176W"}, {"from": "YOR151C", "to": "YDL140C"}, {"from": "YOR151C", "to": "YIL021W"}, {"from": "YOR151C", "to": "YML010W"}, {"from": "YOR151C", "to": "YJL168C"}, {"from": "YOR151C", "to": "YBR154C"}, {"from": "YOR151C", "to": "YDR404C"}, {"from": "YOR151C", "to": "YGR063C"}, {"from": "YOR151C", "to": "YPR187W"}, {"from": "YOR151C", "to": "YER125W"}, {"from": "YOR151C", "to": "YBR010W"}, {"from": "YBR198C", "to": "YHR099W"}, {"from": "YBR198C", "to": "YGL112C"}, {"from": "YBR198C", "to": "YBR081C"}, {"from": "YBR198C", "to": "YDR167W"}, {"from": "YBR198C", "to": "YDR448W"}, {"from": "YBR198C", "to": "YMR236W"}, {"from": "YBR198C", "to": "YDR145W"}, {"from": "YBR198C", "to": "YGL066W"}, {"from": "YBR198C", "to": "YCL010C"}, {"from": "YBR198C", "to": "YBR111W-A"}, {"from": "YBR198C", "to": "YPL254W"}, {"from": "YBR198C", "to": "YDR176W"}, {"from": "YBR198C", "to": "YGR252W"}, {"from": "YBR198C", "to": "YOL148C"}, {"from": "YBR198C", "to": "YDR392W"}, {"from": "YBR198C", "to": "YLR055C"}, {"from": "YBR198C", "to": "YMR223W"}, {"from": "YBR198C", "to": "YPL047W"}, {"from": "YBR198C", "to": "YGL178W"}, {"from": "YDR363W-A", "to": "YHR027C"}, {"from": "YDR363W-A", "to": "YHR200W"}, {"from": "YDR363W-A", "to": "YFR004W"}, {"from": "YDR363W-A", "to": "YFR052W"}, {"from": "YDR363W-A", "to": "YIL075C"}, {"from": "YDR363W-A", "to": "YER021W"}, {"from": "YDR363W-A", "to": "YDL147W"}, {"from": "YDR363W-A", "to": "YDL097C"}, {"from": "YDR363W-A", "to": "YOR261C"}, {"from": "YDR363W-A", "to": "YDR427W"}, {"from": "YDR363W-A", "to": "YKL145W"}, {"from": "YDR363W-A", "to": "YDR394W"}, {"from": "YDR363W-A", "to": "YGL048C"}, {"from": "YDR363W-A", "to": "YPR108W"}, {"from": "YDR363W-A", "to": "YER012W"}, {"from": "YDR363W-A", "to": "YOR117W"}, {"from": "YDR363W-A", "to": "YGR232W"}, {"from": "YDR363W-A", "to": "YOR259C"}, {"from": "YDR363W-A", "to": "YLR421C"}, {"from": "YDR363W-A", "to": "YBR111W-A"}, {"from": "YDR145W", "to": "YHR099W"}, {"from": "YDR145W", "to": "YLR399C"}, {"from": "YDR145W", "to": "YGL112C"}, {"from": "YDR145W", "to": "YBR081C"}, {"from": "YDR145W", "to": "YDR448W"}, {"from": "YDR145W", "to": "YGR252W"}, {"from": "YDR145W", "to": "YPL254W"}, {"from": "YDR145W", "to": "YDR176W"}, {"from": "YDR145W", "to": "YOL148C"}, {"from": "YDR145W", "to": "YLR055C"}, {"from": "YDR145W", "to": "YMR236W"}, {"from": "YDR145W", "to": "YMR223W"}, {"from": "YDR145W", "to": "YCL010C"}, {"from": "YDR145W", "to": "YGL066W"}, {"from": "YDR145W", "to": "YDR167W"}, {"from": "YDR145W", "to": "YBR111W-A"}, {"from": "YDR145W", "to": "YDR392W"}, {"from": "YDR145W", "to": "YPL047W"}, {"from": "YJL168C", "to": "YDL140C"}, {"from": "YJL168C", "to": "YIL021W"}, {"from": "YJL168C", "to": "YBR154C"}, {"from": "YJL168C", "to": "YDR404C"}, {"from": "YJL168C", "to": "YBR010W"}, {"from": "YJL168C", "to": "YGL178W"}, {"from": "YBR111W-A", "to": "YHR099W"}, {"from": "YBR111W-A", "to": "YGL112C"}, {"from": "YBR111W-A", "to": "YBR081C"}, {"from": "YBR111W-A", "to": "YDR448W"}, {"from": "YBR111W-A", "to": "YGR252W"}, {"from": "YBR111W-A", "to": "YPL254W"}, {"from": "YBR111W-A", "to": "YDR176W"}, {"from": "YBR111W-A", "to": "YOL148C"}, {"from": "YBR111W-A", "to": "YLR055C"}, {"from": "YBR111W-A", "to": "YMR236W"}, {"from": "YBR111W-A", "to": "YMR223W"}, {"from": "YBR111W-A", "to": "YCL010C"}, {"from": "YBR111W-A", "to": "YGL066W"}, {"from": "YBR111W-A", "to": "YDR167W"}, {"from": "YBR111W-A", "to": "YDR392W"}, {"from": "YBR111W-A", "to": "YPL047W"}, {"from": "YMR223W", "to": "YDL140C"}, {"from": "YMR223W", "to": "YHR099W"}, {"from": "YMR223W", "to": "YGL112C"}, {"from": "YMR223W", "to": "YBR081C"}, {"from": "YMR223W", "to": "YDR448W"}, {"from": "YMR223W", "to": "YGR252W"}, {"from": "YMR223W", "to": "YPL254W"}, {"from": "YMR223W", "to": "YDR176W"}, {"from": "YMR223W", "to": "YOL148C"}, {"from": "YMR223W", "to": "YLR055C"}, {"from": "YMR223W", "to": "YMR236W"}, {"from": "YMR223W", "to": "YDR392W"}, {"from": "YMR223W", "to": "YDR167W"}, {"from": "YMR223W", "to": "YPL047W"}, {"from": "YMR223W", "to": "YGL066W"}, {"from": "YMR223W", "to": "YCL010C"}, {"from": "YDR167W", "to": "YHR099W"}, {"from": "YDR167W", "to": "YGL112C"}, {"from": "YDR167W", "to": "YBR081C"}, {"from": "YDR167W", "to": "YDR448W"}, {"from": "YDR167W", "to": "YGR252W"}, {"from": "YDR167W", "to": "YPL254W"}, {"from": "YDR167W", "to": "YDR176W"}, {"from": "YDR167W", "to": "YOL148C"}, {"from": "YDR167W", "to": "YLR055C"}, {"from": "YDR167W", "to": "YMR236W"}, {"from": "YDR167W", "to": "YCL010C"}, {"from": "YDR167W", "to": "YGL066W"}, {"from": "YDR167W", "to": "YDR392W"}, {"from": "YDR167W", "to": "YPL047W"}, {"from": "YOL012C", "to": "YGR002C"}, {"from": "YOL012C", "to": "YDR334W"}, {"from": "YOL012C", "to": "YLR399C"}, {"from": "YOL012C", "to": "YFL039C"}, {"from": "YOL012C", "to": "YAL011W"}, {"from": "YOL012C", "to": "YBR010W"}, {"from": "YOL012C", "to": "YGR252W"}, {"from": "YOL012C", "to": "YGL178W"}, {"from": "YDR334W", "to": "YGR002C"}, {"from": "YDR334W", "to": "YFL039C"}, {"from": "YDR334W", "to": "YLR399C"}, {"from": "YDR334W", "to": "YAL011W"}, {"from": "YDR334W", "to": "YGL178W"}, {"from": "YPR108W", "to": "YHR027C"}, {"from": "YPR108W", "to": "YHR200W"}, {"from": "YPR108W", "to": "YFR004W"}, {"from": "YPR108W", "to": "YFR052W"}, {"from": "YPR108W", "to": "YIL075C"}, {"from": "YPR108W", "to": "YER021W"}, {"from": "YPR108W", "to": "YDL147W"}, {"from": "YPR108W", "to": "YDL097C"}, {"from": "YPR108W", "to": "YOR261C"}, {"from": "YPR108W", "to": "YDR427W"}, {"from": "YPR108W", "to": "YKL145W"}, {"from": "YPR108W", "to": "YDR394W"}, {"from": "YPR108W", "to": "YGL048C"}, {"from": "YPR108W", "to": "YER012W"}, {"from": "YPR108W", "to": "YOR117W"}, {"from": "YPR108W", "to": "YOR259C"}, {"from": "YPR108W", "to": "YHL030W"}, {"from": "YPR108W", "to": "YGR232W"}, {"from": "YPR108W", "to": "YBR272C"}, {"from": "YBR010W", "to": "YDL140C"}, {"from": "YBR010W", "to": "YHR090C"}, {"from": "YBR010W", "to": "YLR399C"}, {"from": "YBR010W", "to": "YDR448W"}, {"from": "YBR010W", "to": "YGR252W"}, {"from": "YBR010W", "to": "YCL010C"}, {"from": "YBR010W", "to": "YGL066W"}, {"from": "YBR010W", "to": "YGL178W"}, {"from": "YDR392W", "to": "YHR099W"}, {"from": "YDR392W", "to": "YGL112C"}, {"from": "YDR392W", "to": "YBR081C"}, {"from": "YDR392W", "to": "YDR448W"}, {"from": "YDR392W", "to": "YGR252W"}, {"from": "YDR392W", "to": "YPL254W"}, {"from": "YDR392W", "to": "YDR176W"}, {"from": "YDR392W", "to": "YOL148C"}, {"from": "YDR392W", "to": "YLR055C"}, {"from": "YDR392W", "to": "YMR236W"}, {"from": "YDR392W", "to": "YCL010C"}, {"from": "YDR392W", "to": "YGL066W"}, {"from": "YDR392W", "to": "YPL047W"}, {"from": "YIL075C", "to": "YHR027C"}, {"from": "YIL075C", "to": "YHR200W"}, {"from": "YIL075C", "to": "YFR004W"}, {"from": "YIL075C", "to": "YFR052W"}, {"from": "YIL075C", "to": "YOR261C"}, {"from": "YIL075C", "to": "YFR010W"}, {"from": "YIL075C", "to": "YER012W"}, {"from": "YIL075C", "to": "YKL145W"}, {"from": "YIL075C", "to": "YDL097C"}, {"from": "YIL075C", "to": "YDL147W"}, {"from": "YIL075C", "to": "YDR427W"}, {"from": "YIL075C", "to": "YGL048C"}, {"from": "YIL075C", "to": "YDR394W"}, {"from": "YIL075C", "to": "YER021W"}, {"from": "YIL075C", "to": "YGR232W"}, {"from": "YIL075C", "to": "YLR421C"}, {"from": "YIL075C", "to": "YOR117W"}, {"from": "YIL075C", "to": "YOR259C"}, {"from": "YIL075C", "to": "YHL030W"}, {"from": "YIL075C", "to": "YBR272C"}, {"from": "YHR027C", "to": "YHR200W"}, {"from": "YHR027C", "to": "YFR004W"}, {"from": "YHR027C", "to": "YFR052W"}, {"from": "YHR027C", "to": "YER021W"}, {"from": "YHR027C", "to": "YDL147W"}, {"from": "YHR027C", "to": "YDL097C"}, {"from": "YHR027C", "to": "YOR261C"}, {"from": "YHR027C", "to": "YDR427W"}, {"from": "YHR027C", "to": "YKL145W"}, {"from": "YHR027C", "to": "YDR394W"}, {"from": "YHR027C", "to": "YGL048C"}, {"from": "YHR027C", "to": "YFR010W"}, {"from": "YHR027C", "to": "YER012W"}, {"from": "YHR027C", "to": "YOR259C"}, {"from": "YHR027C", "to": "YOR117W"}, {"from": "YHR027C", "to": "YLR421C"}, {"from": "YHR027C", "to": "YGR232W"}, {"from": "YHR027C", "to": "YHL030W"}, {"from": "YHR027C", "to": "YBR272C"}, {"from": "YGR232W", "to": "YHR200W"}, {"from": "YGR232W", "to": "YFR004W"}, {"from": "YGR232W", "to": "YFR052W"}, {"from": "YGR232W", "to": "YER021W"}, {"from": "YGR232W", "to": "YDL147W"}, {"from": "YGR232W", "to": "YDL097C"}, {"from": "YGR232W", "to": "YOR261C"}, {"from": "YGR232W", "to": "YDR427W"}, {"from": "YGR232W", "to": "YKL145W"}, {"from": "YGR232W", "to": "YDR394W"}, {"from": "YGR232W", "to": "YGL048C"}, {"from": "YGR232W", "to": "YER012W"}, {"from": "YGR232W", "to": "YBR272C"}, {"from": "YGR232W", "to": "YOR117W"}, {"from": "YGR232W", "to": "YLR421C"}, {"from": "YGR232W", "to": "YOR259C"}, {"from": "YDL140C", "to": "YIL021W"}, {"from": "YDL140C", "to": "YML010W"}, {"from": "YDL140C", "to": "YBR154C"}, {"from": "YDL140C", "to": "YDR404C"}, {"from": "YDL140C", "to": "YPR187W"}, {"from": "YDL140C", "to": "YER125W"}, {"from": "YDL140C", "to": "YGR063C"}, {"from": "YFR052W", "to": "YHR200W"}, {"from": "YFR052W", "to": "YFR004W"}, {"from": "YFR052W", "to": "YOR261C"}, {"from": "YFR052W", "to": "YGL048C"}, {"from": "YFR052W", "to": "YBR272C"}, {"from": "YFR052W", "to": "YER012W"}, {"from": "YFR052W", "to": "YER021W"}, {"from": "YFR052W", "to": "YDL097C"}, {"from": "YFR052W", "to": "YDR427W"}, {"from": "YFR052W", "to": "YDR394W"}, {"from": "YFR052W", "to": "YOR259C"}, {"from": "YFR052W", "to": "YOR117W"}, {"from": "YFR052W", "to": "YDL147W"}, {"from": "YFR052W", "to": "YKL145W"}, {"from": "YHL030W", "to": "YFR004W"}, {"from": "YHL030W", "to": "YER021W"}, {"from": "YHL030W", "to": "YDL147W"}, {"from": "YHL030W", "to": "YDL097C"}, {"from": "YHL030W", "to": "YOR261C"}, {"from": "YHL030W", "to": "YDR427W"}, {"from": "YHL030W", "to": "YKL145W"}, {"from": "YHL030W", "to": "YDR394W"}, {"from": "YHL030W", "to": "YGL048C"}, {"from": "YHL030W", "to": "YFR010W"}, {"from": "YHL030W", "to": "YER012W"}, {"from": "YHL030W", "to": "YOR117W"}, {"from": "YHL030W", "to": "YOR259C"}, {"from": "YLR421C", "to": "YHR200W"}, {"from": "YLR421C", "to": "YFR004W"}, {"from": "YLR421C", "to": "YDL147W"}, {"from": "YLR421C", "to": "YDL097C"}, {"from": "YLR421C", "to": "YOR261C"}, {"from": "YLR421C", "to": "YDR427W"}, {"from": "YLR421C", "to": "YKL145W"}, {"from": "YLR421C", "to": "YDR394W"}, {"from": "YLR421C", "to": "YGL048C"}, {"from": "YLR421C", "to": "YER012W"}, {"from": "YLR421C", "to": "YOR117W"}, {"from": "YDR404C", "to": "YIL021W"}, {"from": "YDR404C", "to": "YML010W"}, {"from": "YDR404C", "to": "YBR154C"}, {"from": "YDR404C", "to": "YPR187W"}, {"from": "YDR404C", "to": "YGR063C"}, {"from": "YDR404C", "to": "YER125W"}, {"from": "YDR404C", "to": "YGL178W"}, {"from": "YNL136W", "to": "YGR002C"}, {"from": "YNL136W", "to": "YHR099W"}, {"from": "YNL136W", "to": "YHR090C"}, {"from": "YNL136W", "to": "YFL039C"}, {"from": "YER012W", "to": "YHR200W"}, {"from": "YER012W", "to": "YFR004W"}, {"from": "YER012W", "to": "YER021W"}, {"from": "YER012W", "to": "YDL147W"}, {"from": "YER012W", "to": "YDL097C"}, {"from": "YER012W", "to": "YOR261C"}, {"from": "YER012W", "to": "YDR427W"}, {"from": "YER012W", "to": "YKL145W"}, {"from": "YER012W", "to": "YDR394W"}, {"from": "YER012W", "to": "YGL048C"}, {"from": "YER012W", "to": "YFR010W"}, {"from": "YER012W", "to": "YOR117W"}, {"from": "YER012W", "to": "YOR259C"}, {"from": "YDL097C", "to": "YHR200W"}, {"from": "YDL097C", "to": "YFR004W"}, {"from": "YDL097C", "to": "YER021W"}, {"from": "YDL097C", "to": "YDL147W"}, {"from": "YDL097C", "to": "YOR261C"}, {"from": "YDL097C", "to": "YDR427W"}, {"from": "YDL097C", "to": "YKL145W"}, {"from": "YDL097C", "to": "YGL048C"}, {"from": "YDL097C", "to": "YBR272C"}, {"from": "YDL097C", "to": "YDR394W"}, {"from": "YDL097C", "to": "YOR259C"}, {"from": "YDL097C", "to": "YOR117W"}, {"from": "YDL097C", "to": "YFR010W"}, {"from": "YBR154C", "to": "YIL021W"}, {"from": "YBR154C", "to": "YML010W"}, {"from": "YBR154C", "to": "YPR187W"}, {"from": "YBR154C", "to": "YER125W"}, {"from": "YBR154C", "to": "YGR063C"}, {"from": "YLR148W", "to": "YMR231W"}, {"from": "YLR148W", "to": "YPL045W"}, {"from": "YLR148W", "to": "YLR396C"}, {"from": "YLR148W", "to": "YDR080W"}, {"from": "YGL178W", "to": "YLR399C"}, {"from": "YGL178W", "to": "YBR081C"}, {"from": "YGL178W", "to": "YPL254W"}, {"from": "YGL178W", "to": "YLR055C"}, {"from": "YGL178W", "to": "YAL011W"}, {"from": "YAL011W", "to": "YGR002C"}, {"from": "YAL011W", "to": "YLR399C"}, {"from": "YOL148C", "to": "YHR099W"}, {"from": "YOL148C", "to": "YGL112C"}, {"from": "YOL148C", "to": "YBR081C"}, {"from": "YOL148C", "to": "YDR448W"}, {"from": "YOL148C", "to": "YGR252W"}, {"from": "YOL148C", "to": "YPL254W"}, {"from": "YOL148C", "to": "YDR176W"}, {"from": "YOL148C", "to": "YMR236W"}, {"from": "YOL148C", "to": "YLR055C"}, {"from": "YOL148C", "to": "YPL047W"}, {"from": "YOL148C", "to": "YCL010C"}, {"from": "YOL148C", "to": "YGL066W"}, {"from": "YDR427W", "to": "YHR200W"}, {"from": "YDR427W", "to": "YFR004W"}, {"from": "YDR427W", "to": "YER021W"}, {"from": "YDR427W", "to": "YDL147W"}, {"from": "YDR427W", "to": "YOR261C"}, {"from": "YDR427W", "to": "YGL048C"}, {"from": "YDR427W", "to": "YFR010W"}, {"from": "YDR427W", "to": "YBR272C"}, {"from": "YDR427W", "to": "YKL145W"}, {"from": "YDR427W", "to": "YDR394W"}, {"from": "YDR427W", "to": "YOR117W"}, {"from": "YDR427W", "to": "YOR259C"}, {"from": "YOR117W", "to": "YHR200W"}, {"from": "YOR117W", "to": "YFR004W"}, {"from": "YOR117W", "to": "YER021W"}, {"from": "YOR117W", "to": "YDL147W"}, {"from": "YOR117W", "to": "YOR261C"}, {"from": "YOR117W", "to": "YKL145W"}, {"from": "YOR117W", "to": "YDR394W"}, {"from": "YOR117W", "to": "YGL048C"}, {"from": "YOR117W", "to": "YFR010W"}, {"from": "YOR117W", "to": "YBR272C"}, {"from": "YOR117W", "to": "YOR259C"}, {"from": "YLR399C", "to": "YGR002C"}, {"from": "YML010W", "to": "YIL021W"}, {"from": "YML010W", "to": "YGR063C"}, {"from": "YML010W", "to": "YPR187W"}, {"from": "YML010W", "to": "YGL112C"}, {"from": "YHR200W", "to": "YFR004W"}, {"from": "YHR200W", "to": "YER021W"}, {"from": "YHR200W", "to": "YDL147W"}, {"from": "YHR200W", "to": "YKL145W"}, {"from": "YHR200W", "to": "YDR394W"}, {"from": "YHR200W", "to": "YGL048C"}, {"from": "YHR200W", "to": "YOR261C"}, {"from": "YHR200W", "to": "YOR259C"}, {"from": "YHR200W", "to": "YFR010W"}, {"from": "YHR200W", "to": "YER125W"}, {"from": "YHR200W", "to": "YBR272C"}, {"from": "YDR448W", "to": "YHR099W"}, {"from": "YDR448W", "to": "YGL112C"}, {"from": "YDR448W", "to": "YBR081C"}, {"from": "YDR448W", "to": "YGR252W"}, {"from": "YDR448W", "to": "YPL254W"}, {"from": "YDR448W", "to": "YDR176W"}, {"from": "YDR448W", "to": "YCL010C"}, {"from": "YDR448W", "to": "YGL066W"}, {"from": "YDR448W", "to": "YLR055C"}, {"from": "YDR448W", "to": "YMR236W"}, {"from": "YDR448W", "to": "YPL047W"}, {"from": "YOR261C", "to": "YFR004W"}, {"from": "YOR261C", "to": "YER021W"}, {"from": "YOR261C", "to": "YDL147W"}, {"from": "YOR261C", "to": "YFR010W"}, {"from": "YOR261C", "to": "YBR272C"}, {"from": "YOR261C", "to": "YKL145W"}, {"from": "YOR261C", "to": "YDR394W"}, {"from": "YHR099W", "to": "YGR002C"}, {"from": "YHR099W", "to": "YGR252W"}, {"from": "YHR099W", "to": "YMR236W"}, {"from": "YHR099W", "to": "YGL112C"}, {"from": "YHR099W", "to": "YBR081C"}, {"from": "YHR099W", "to": "YHR090C"}, {"from": "YHR099W", "to": "YPL047W"}, {"from": "YHR099W", "to": "YPL254W"}, {"from": "YHR099W", "to": "YDR176W"}, {"from": "YHR099W", "to": "YGL066W"}, {"from": "YHR099W", "to": "YLR055C"}, {"from": "YHR099W", "to": "YCL010C"}, {"from": "YKL145W", "to": "YFR004W"}, {"from": "YKL145W", "to": "YER021W"}, {"from": "YKL145W", "to": "YDL147W"}, {"from": "YKL145W", "to": "YGL048C"}, {"from": "YKL145W", "to": "YFR010W"}, {"from": "YKL145W", "to": "YDR394W"}, {"from": "YKL145W", "to": "YOR259C"}, {"from": "YKL145W", "to": "YBR272C"}, {"from": "YER021W", "to": "YFR004W"}, {"from": "YER021W", "to": "YBR272C"}, {"from": "YER021W", "to": "YDL147W"}, {"from": "YER021W", "to": "YFR010W"}, {"from": "YER021W", "to": "YDR394W"}, {"from": "YDL147W", "to": "YFR004W"}, {"from": "YDL147W", "to": "YGL048C"}, {"from": "YDL147W", "to": "YDR394W"}, {"from": "YDL147W", "to": "YOR259C"}, {"from": "YDL147W", "to": "YFR010W"}, {"from": "YDL147W", "to": "YBR272C"}, {"from": "YPR187W", "to": "YIL021W"}, {"from": "YPR187W", "to": "YER125W"}, {"from": "YPR187W", "to": "YGR063C"}, {"from": "YMR231W", "to": "YDR080W"}, {"from": "YMR231W", "to": "YPL045W"}, {"from": "YMR231W", "to": "YLR396C"}, {"from": "YHR090C", "to": "YGR002C"}, {"from": "YGR063C", "to": "YIL021W"}, {"from": "YLR055C", "to": "YGL112C"}, {"from": "YLR055C", "to": "YBR081C"}, {"from": "YLR055C", "to": "YGR252W"}, {"from": "YLR055C", "to": "YPL254W"}, {"from": "YLR055C", "to": "YDR176W"}, {"from": "YLR055C", "to": "YPL047W"}, {"from": "YLR055C", "to": "YMR236W"}, {"from": "YLR055C", "to": "YCL010C"}, {"from": "YLR055C", "to": "YGL066W"}, {"from": "YBR272C", "to": "YFR004W"}, {"from": "YBR272C", "to": "YDR394W"}, {"from": "YBR272C", "to": "YGL048C"}, {"from": "YBR272C", "to": "YOR259C"}, {"from": "YFR010W", "to": "YFR004W"}, {"from": "YFR010W", "to": "YDR394W"}, {"from": "YFR010W", "to": "YGL048C"}, {"from": "YFR010W", "to": "YOR259C"}, {"from": "YMR236W", "to": "YGL112C"}, {"from": "YMR236W", "to": "YBR081C"}, {"from": "YMR236W", "to": "YGR252W"}, {"from": "YMR236W", "to": "YPL254W"}, {"from": "YMR236W", "to": "YDR176W"}, {"from": "YMR236W", "to": "YCL010C"}, {"from": "YMR236W", "to": "YPL047W"}, {"from": "YMR236W", "to": "YGL066W"}, {"from": "YGL048C", "to": "YFR004W"}, {"from": "YGL048C", "to": "YDR394W"}, {"from": "YGL048C", "to": "YOR259C"}, {"from": "YGL048C", "to": "YBR081C"}, {"from": "YFL039C", "to": "YFR004W"}, {"from": "YPL254W", "to": "YGL112C"}, {"from": "YPL254W", "to": "YBR081C"}, {"from": "YPL254W", "to": "YGR252W"}, {"from": "YPL254W", "to": "YPL047W"}, {"from": "YPL254W", "to": "YCL010C"}, {"from": "YPL254W", "to": "YDR176W"}, {"from": "YPL254W", "to": "YGL066W"}, {"from": "YDR394W", "to": "YFR004W"}, {"from": "YDR394W", "to": "YOR259C"}, {"from": "YLR396C", "to": "YPL045W"}, {"from": "YLR396C", "to": "YDR080W"}, {"from": "YFR004W", "to": "YOR259C"}, {"from": "YGR252W", "to": "YGL112C"}, {"from": "YGR252W", "to": "YBR081C"}, {"from": "YGR252W", "to": "YCL010C"}, {"from": "YGR252W", "to": "YGL066W"}, {"from": "YGR252W", "to": "YDR176W"}, {"from": "YGR252W", "to": "YPL047W"}, {"from": "YIL021W", "to": "YER125W"}, {"from": "YDR080W", "to": "YPL045W"}, {"from": "YGL066W", "to": "YGL112C"}, {"from": "YGL066W", "to": "YBR081C"}, {"from": "YGL066W", "to": "YDR176W"}, {"from": "YGL066W", "to": "YCL010C"}, {"from": "YGL066W", "to": "YPL047W"}, {"from": "YDR176W", "to": "YGL112C"}, {"from": "YDR176W", "to": "YBR081C"}, {"from": "YDR176W", "to": "YPL047W"}, {"from": "YDR176W", "to": "YCL010C"}, {"from": "YCL010C", "to": "YGL112C"}, {"from": "YCL010C", "to": "YBR081C"}, {"from": "YCL010C", "to": "YPL047W"}, {"from": "YGL112C", "to": "YBR081C"}, {"from": "YGL112C", "to": "YPL047W"}, {"from": "YBR081C", "to": "YPL047W"}]);
+
+                  nodeColors = {};
+                  allNodes = nodes.get({ returnType: "Object" });
+                  for (nodeId in allNodes) {
+                    nodeColors[nodeId] = allNodes[nodeId].color;
+                  }
+                  allEdges = edges.get({ returnType: "Object" });
+                  // adding nodes and edges to the graph
+                  data = {nodes: nodes, edges: edges};
+
+                  var options = {
+    "configure": {
+        "enabled": true,
+        "filter": "physics"
+    },
+    "edges": {
+        "color": {
+            "inherit": true
+        },
+        "smooth": {
+            "enabled": true,
+            "type": "dynamic"
+        }
+    },
+    "interaction": {
+        "dragNodes": true,
+        "hideEdgesOnDrag": false,
+        "hideNodesOnDrag": false
+    },
+    "physics": {
+        "enabled": true,
+        "stabilization": {
+            "enabled": true,
+            "fit": true,
+            "iterations": 1000,
+            "onlyDynamicEdges": false,
+            "updateInterval": 50
+        }
+    }
+};
+
+                  
+
+
+                  
+                  // if this network requires displaying the configure window,
+                  // put it in its div
+                  options.configure["container"] = document.getElementById("config");
+                  
+
+                  network = new vis.Network(container, data, options);
+
+                  
+
+                  
+
+                  
+
+
+                  
+
+                  return network;
+
+              }
+              drawGraph();
+        </script>
+    </body>
+</html>
