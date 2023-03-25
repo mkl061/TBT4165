@@ -1,0 +1,17 @@
+@startuml
+
+circle A_ex
+circle A_in
+circle ADP
+circle P_i
+circle B
+circle C
+circle ATP
+circle D_in
+circle E
+circle D_ex
+
+A_ex --> A_in : R1
+A_in --> 
+
+@enduml
